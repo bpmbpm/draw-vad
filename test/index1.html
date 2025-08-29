@@ -16,13 +16,19 @@
         }
         .container {
             display: grid;
-            grid-template-columns: 300px 1fr 300px;
+            grid-template-columns: 300px 1fr;
+            grid-template-rows: 1fr;
             height: 100vh;
         }
+        .left-panel {
+            display: grid;
+            grid-template-rows: 1fr 1fr;
+            border-right: 1px solid #ccc;
+        }
         .panel {
-            border: 1px solid #ccc;
             padding: 15px;
             overflow: auto;
+            border-bottom: 1px solid #ccc;
         }
         #treeview {
             background: #f8f9fa;
@@ -36,6 +42,7 @@
         #comments {
             background: #f0f0f0;
             font-family: monospace;
+            border-bottom: none;
         }
         svg {
             max-width: 100%;
@@ -48,6 +55,16 @@
             padding-bottom: 5px;
             border-bottom: 2px solid #ccc;
         }
+        .path-info {
+            font-size: 12px;
+            color: #666;
+            word-break: break-all;
+            margin-top: 10px;
+            padding: 5px;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
         
         /* Адаптивность для мобильных устройств */
         @media (max-width: 768px) {
@@ -55,26 +72,33 @@
                 grid-template-columns: 1fr;
                 grid-template-rows: 300px 1fr 200px;
             }
+            .left-panel {
+                grid-template-rows: auto;
+                border-right: none;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div id="treeview" class="panel">
-            <div class="header">Дерево объектов</div>
-            <!-- jstree будет инициализирован здесь -->
+        <div class="left-panel">
+            <div id="treeview" class="panel">
+                <div class="header">Дерево объектов</div>
+                <!-- jstree будет инициализирован здесь -->
+            </div>
+            
+            <div id="comments" class="panel">
+                <div class="header">Комментарии</div>
+                <!-- Информация о файле будет здесь -->
+                <div id="comment-content">Файл не выбран</div>
+                <div class="path-info">Полный путь: <span id="full-path">не определен</span></div>
+            </div>
         </div>
         
         <div id="diagrams" class="panel">
             <div class="header">Диаграмма</div>
             <!-- SVG будет загружаться сюда -->
             <div id="diagram-content">Выберите объект в дереве для отображения диаграммы</div>
-        </div>
-        
-        <div id="comments" class="panel">
-            <div class="header">Комментарии</div>
-            <!-- Информация о файле будет здесь -->
-            <div id="comment-content">Файл не выбран</div>
         </div>
     </div>
 
@@ -84,6 +108,9 @@
     
     <script>
         $(document).ready(function() {
+            // Получаем базовый URL для корректного формирования путей
+            const baseUrl = window.location.href.split('/').slice(0, -1).join('/') + '/';
+            
             // Инициализация jstree
             $('#treeview').jstree({
                 'core': {
@@ -117,7 +144,10 @@
             $('#treeview').on('select_node.jstree', function(e, data) {
                 const objId = data.node.id;
                 const svgFile = `diagrams/${objId}.svg`;
-              //  const svgFile = `/diagrams/${objId}.svg`;
+                const fullPath = `${baseUrl}${svgFile}`;
+                
+                // Обновляем информацию о пути
+                $('#full-path').text(fullPath);
                 
                 // Загрузка SVG файла
                 $.get(svgFile)
