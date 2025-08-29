@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Treeview with Diagrams</title>
+    <!-- Подключаем стили jstree -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.15/themes/default/style.min.css" />
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            grid-template-rows: 1fr;
+            height: 100vh;
+        }
+        .left-panel {
+            display: grid;
+            grid-template-rows: 1fr 1fr;
+            border-right: 1px solid #ccc;
+        }
+        .panel {
+            padding: 15px;
+            overflow: auto;
+            border-bottom: 1px solid #ccc;
+        }
+        #treeview {
+            background: #f8f9fa;
+        }
+        #diagrams {
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #comments {
+            background: #f0f0f0;
+            font-family: monospace;
+            border-bottom: none;
+        }
+        .svg-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .svg-container img {
+            max-width: 100%;
+            max-height: 100%;
+            border: 1px solid #eee;
+        }
+        .header {
+            font-weight: bold;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #ccc;
+        }
+        .path-info {
+            font-size: 12px;
+            color: #666;
+            word-break: break-all;
+            margin-top: 10px;
+            padding: 5px;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+        .debug-info {
+            font-size: 12px;
+            color: #d00;
+            margin-top: 10px;
+            padding: 5px;
+            background: #ffe6e6;
+            border: 1px solid #fcc;
+            border-radius: 3px;
+            max-height: 100px;
+            overflow-y: auto;
+        }
+        .status-success {
+            color: #080;
+        }
+        .status-error {
+            color: #d00;
+        }
+        
+        /* Адаптивность для мобильных устройств */
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+                grid-template-rows: 300px 1fr 200px;
+            }
+            .left-panel {
+                grid-template-rows: auto;
+                border-right: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="left-panel">
+            <div id="treeview" class="panel">
+                <div class="header">Дерево объектов</div>
+                <!-- jstree будет инициализирован здесь -->
+            </div>
+            
+            <div id="comments" class="panel">
+                <div class="header">Комментарии</div>
+                <!-- Информация о файле будет здесь -->
+                <div id="comment-content">Файл не выбран</div>
+                <div class="path-info">Полный путь: <span id="full-path">не определен</span></div>
+                <div class="debug-info">Отладочная информация: <span id="debug-info">ожидание выбора...</span></div>
+            </div>
+        </div>
+        
+        <div id="diagrams" class="panel">
+            <div class="header">Диаграмма</div>
+            <!-- SVG будет загружаться сюда -->
+            <div id="diagram-content" class="svg-container">Выберите объект в дереве для отображения диаграммы</div>
+        </div>
+    </div>
+
+    <!-- Подключаем jQuery и jstree -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.15/jstree.min.js"></script>
+    
+    <script>
+        $(document).ready(function() {
+            // Получаем базовый URL для корректного формирования путей
+            const baseUrl = window.location.href.split('/').slice(0, -1).join('/') + '/';
+            
+            // Функция для добавления отладочной информации
+            function addDebugInfo(message, isError = false) {
+                const now = new Date().toLocaleTimeString();
+                const debugElement = $('#debug-info');
+                const currentText = debugElement.text();
+                const className = isError ? 'status-error' : 'status-success';
+                debugElement.html(`${now}: <span class="${className}">${message}</span>. ${currentText}`);
+                console.log(`${now}: ${message}`);
+            }
+
+            // Инициализация jstree
+            $('#treeview').jstree({
+                'core': {
+                    'data': [
+                        {
+                            "text": "obj1",
+                            "id": "obj1",
+                            "children": [
+                                {
+                                    "text": "obj11",
+                                    "id": "obj11",
+                                    "children": [
+                                        {
+                                            "text": "obj111", 
+                                            "id": "obj111",
+                                            "icon": "jstree-file"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ],
+                    'themes': {
+                        'dots': true,
+                        'icons': true
+                    }
+                }
+            });
+            
+            // Обработчик выбора узла в дереве
+            $('#treeview').on('select_node.jstree', function(e, data) {
+                const objId = data.node.id;
+                const svgFile = `diagrams/${objId}.svg`;
+                const fullPath = `${baseUrl}${svgFile}`;
+                const timestamp = new Date().getTime();
+                const svgUrl = `${svgFile}?t=${timestamp}`;
+
+                // Обновляем информацию о пути
+                $('#full-path').text(fullPath);
+                addDebugInfo(`Выбран элемент: ${objId}`);
+                
+                // Показываем информацию о загрузке
+                $('#comment-content').text(`Загружается файл: ${objId}.svg`);
+                addDebugInfo(`Попытка загрузки: ${svgFile}`);
+                
+                // Очищаем предыдущий контент
+                $('#diagram-content').html('<div>Загрузка SVG...</div>');
+                
+                // Используем тег img для отображения SVG (более стабильный подход)
+                const img = new Image();
+                img.onload = function() {
+                    addDebugInfo(`SVG загружен через img: ${svgFile}`);
+                    $('#diagram-content').html(img);
+                    $('#comment-content').text(`Отображается файл: ${objId}.svg`);
+                };
+                img.onerror = function() {
+                    addDebugInfo(`Ошибка загрузки через img: ${svgFile}`, true);
+                    $('#diagram-content').html(`<div style="color: red; text-align: center;">
+                        <p>Не удалось загрузить файл ${svgFile}</p>
+                        <p>Проверьте:</p>
+                        <ul>
+                            <li>Существует ли файл по указанному пути</li>
+                            <li>Доступен ли файл через прямой URL</li>
+                        </ul>
+                    </div>`);
+                    $('#comment-content').text(`Ошибка загрузки: ${objId}.svg`);
+                };
+                img.src = svgUrl;
+            });
+            
+            // Инициализация начального состояния
+            addDebugInfo("Дерево инициализировано");
+            $('#treeview').jstree('select_node', 'obj1');
+        });
+    </script>
+</body>
+</html>
