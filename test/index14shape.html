@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Treeview with Diagrams</title>
+    <!-- Подключаем стили jstree -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.15/themes/default/style.min.css" />
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            grid-template-rows: 1fr;
+            height: 100vh;
+        }
+        .left-panel {
+            display: grid;
+            grid-template-rows: 1fr 1fr;
+            border-right: 1px solid #ccc;
+        }
+        .panel {
+            padding: 15px;
+            overflow: auto;
+            border-bottom: 1px solid #ccc;
+        }
+        #treeview {
+            background: #f8f9fa;
+        }
+        #diagrams {
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+        }
+        #comments {
+            background: #f0f0f0;
+            font-family: monospace;
+            border-bottom: none;
+        }
+        .diagram-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #ccc;
+        }
+        .diagram-title {
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .drawio-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: auto;
+        }
+        .drawio-container iframe {
+            width: 100%;
+            height: 100%;
+            border: 1px solid #eee;
+        }
+        .header {
+            font-weight: bold;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #ccc;
+        }
+        .shape-info {
+            margin-top: 10px;
+            padding: 10px;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+        .shape-info h4 {
+            margin: 0 0 8px 0;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #eee;
+        }
+        .shape-properties {
+            max-height: 100px;
+            overflow-y: auto;
+        }
+        
+        /* Адаптивность для мобильных устройств */
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+                grid-template-rows: 300px 1fr 200px;
+            }
+            .left-panel {
+                grid-template-rows: auto;
+                border-right: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="left-panel">
+            <div id="treeview" class="panel">
+                <div class="header">Дерево объектов</div>
+                <!-- jstree будет инициализирован здесь -->
+            </div>
+            
+            <div id="comments" class="panel">
+                <div class="header">Комментарии</div>
+                <!-- Информация о файле будет здесь -->
+                <div id="comment-content">Файл не выбран</div>
+                <div class="shape-info">
+                    <h4>Информация о фигуре:</h4>
+                    <div id="shape-details">Выберите фигуру на диаграмме</div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="diagrams" class="panel">
+            <div class="diagram-header">
+                <div class="diagram-title">Диаграмма</div>
+            </div>
+            <!-- Draw.io будет загружаться сюда -->
+            <div id="diagram-content" class="drawio-container">Загрузка корневой диаграммы...</div>
+        </div>
+    </div>
+
+    <!-- Подключаем jQuery и jstree -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.15/jstree.min.js"></script>
+    
+    <script>
+        $(document).ready(function() {
+            // Базовые настройки для нового репозитория
+            const githubUsername = 'bpmbpm';
+            const githubRepo = 'draw-vad';
+            const githubBranch = 'main';
+            const diagramsFolder = 'test/diagrams';
+            
+            // Переменная для хранения текущего iframe
+            let currentIframe = null;
+            
+            // Обработчик сообщений от Draw.io
+            window.addEventListener('message', function(event) {
+                // Проверяем, что сообщение пришло от Draw.io
+                if (event.origin !== 'https://app.diagrams.net') return;
+                
+                // Обрабатываем сообщение о выборе элемента
+                if (event.data && event.data.event === 'select') {
+                    const selected = event.data.selected;
+                    if (selected && selected.length > 0) {
+                        // Получаем информацию о выбранной фигуре
+                        const shape = selected[0];
+                        let shapeInfo = '';
+                        
+                        if (shape.value) {
+                            shapeInfo += `<strong>Название:</strong> ${shape.value}<br>`;
+                        }
+                        
+                        if (shape.style) {
+                            shapeInfo += `<strong>Стиль:</strong> ${shape.style}<br>`;
+                        }
+                        
+                        if (shape.id) {
+                            shapeInfo += `<strong>ID:</strong> ${shape.id}<br>`;
+                        }
+                        
+                        if (shape.geometry) {
+                            shapeInfo += `<strong>Геометрия:</strong> x=${shape.geometry.x}, y=${shape.geometry.y}, width=${shape.geometry.width}, height=${shape.geometry.height}<br>`;
+                        }
+                        
+                        // Обновляем информацию о фигуре
+                        $('#shape-details').html(shapeInfo || 'Информация о фигуре недоступна');
+                    } else {
+                        $('#shape-details').html('Фигура не выбрана');
+                    }
+                }
+            });
+
+            // Функция для формирования URL Draw.io
+            function getDrawioUrl(fileName) {
+                // Формируем URL к файлу на GitHub Pages
+                const fileUrl = `https://${githubUsername}.github.io/${githubRepo}/${diagramsFolder}/${fileName}`;
+                
+                // Формируем URL для Draw.io с отключенной кнопкой "Правка"
+                return `https://app.diagrams.net/?lightbox=1&highlight=0000ff&layers=1&nav=1&title=#U${encodeURIComponent(fileUrl)}`;
+            }
+
+            // Функция для загрузки Draw.io диаграммы
+            function loadDrawio(fileName, comment) {
+                // Обновляем информацию о пути
+                $('#comment-content').text(comment || `Загружается файл: ${fileName}`);
+                
+                // Очищаем предыдущий контент
+                $('#diagram-content').html('<div>Загрузка диаграммы...</div>');
+                
+                // Сбрасываем информацию о фигуре
+                $('#shape-details').html('Выберите фигуру на диаграмме');
+                
+                // Формируем URL для Draw.io
+                const drawioUrl = getDrawioUrl(fileName);
+                
+                // Создаем iframe для отображения Draw.io диаграммы
+                const iframe = document.createElement('iframe');
+                iframe.src = drawioUrl;
+                iframe.onload = function() {
+                    $('#comment-content').text(`Отображается файл: ${fileName}`);
+                    currentIframe = iframe;
+                };
+                iframe.onerror = function() {
+                    $('#diagram-content').html(`<div style="color: red; text-align: center;">
+                        <p>Не удалось загрузить файл ${fileName}</p>
+                        <p>Проверьте:</p>
+                        <ul>
+                            <li>Существует ли файл в репозитории</li>
+                            <li>Правильно ли указаны настройки GitHub</li>
+                        </ul>
+                    </div>`);
+                    $('#comment-content').text(`Ошибка загрузки: ${fileName}`);
+                    currentIframe = null;
+                };
+                
+                $('#diagram-content').html(iframe);
+            }
+
+            // Загружаем корневую диаграмму при запуске
+            loadDrawio('root.drawio', 'Корневая диаграмма');
+
+            // Инициализация jstree с пользовательскими данными
+            $('#treeview').jstree({
+                'core': {
+                    'data': [
+                        {
+                            "text": "Основной объект",
+                            "id": "obj1",
+                            "file": "obj1.drawio",
+                            "children": [
+                                {
+                                    "text": "Дочерний объект 1",
+                                    "id": "obj11",
+                                    "file": "obj11.drawio",
+                                    "children": [
+                                        {
+                                            "text": "Внутренний объект", 
+                                            "id": "obj111",
+                                            "file": "obj111.drawio",
+                                            "icon": "jstree-file"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ],
+                    'themes': {
+                        'dots': true,
+                        'icons': true
+                    }
+                }
+            });
+            
+            // Обработчик выбора узла в дереве
+            $('#treeview').on('select_node.jstree', function(e, data) {
+                const node = data.node;
+                const objId = node.id;
+                
+                // Используем пользовательское имя файла, если оно задано, иначе используем id
+                const fileName = node.original && node.original.file ? node.original.file : `${objId}.drawio`;
+                
+                // Загружаем соответствующую Draw.io диаграмму
+                loadDrawio(fileName, `Загружается файл: ${fileName}`);
+            });
+        });
+    </script>
+</body>
+</html>
