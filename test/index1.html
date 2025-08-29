@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Treeview with Diagrams</title>
+    <!-- Подключаем стили jstree -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.15/themes/default/style.min.css" />
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: 300px 1fr 300px;
+            height: 100vh;
+        }
+        .panel {
+            border: 1px solid #ccc;
+            padding: 15px;
+            overflow: auto;
+        }
+        #treeview {
+            background: #f8f9fa;
+        }
+        #diagrams {
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #comments {
+            background: #f0f0f0;
+            font-family: monospace;
+        }
+        svg {
+            max-width: 100%;
+            max-height: 100%;
+            border: 1px solid #eee;
+        }
+        .header {
+            font-weight: bold;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #ccc;
+        }
+        
+        /* Адаптивность для мобильных устройств */
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+                grid-template-rows: 300px 1fr 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="treeview" class="panel">
+            <div class="header">Дерево объектов</div>
+            <!-- jstree будет инициализирован здесь -->
+        </div>
+        
+        <div id="diagrams" class="panel">
+            <div class="header">Диаграмма</div>
+            <!-- SVG будет загружаться сюда -->
+            <div id="diagram-content">Выберите объект в дереве для отображения диаграммы</div>
+        </div>
+        
+        <div id="comments" class="panel">
+            <div class="header">Комментарии</div>
+            <!-- Информация о файле будет здесь -->
+            <div id="comment-content">Файл не выбран</div>
+        </div>
+    </div>
+
+    <!-- Подключаем jQuery и jstree -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.15/jstree.min.js"></script>
+    
+    <script>
+        $(document).ready(function() {
+            // Инициализация jstree
+            $('#treeview').jstree({
+                'core': {
+                    'data': [
+                        {
+                            "text": "obj1",
+                            "id": "obj1",
+                            "children": [
+                                {
+                                    "text": "obj11",
+                                    "id": "obj11",
+                                    "children": [
+                                        {
+                                            "text": "obj111", 
+                                            "id": "obj111",
+                                            "icon": "jstree-file"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ],
+                    'themes': {
+                        'dots': true,
+                        'icons': true
+                    }
+                }
+            });
+            
+            // Обработчик выбора узла в дереве
+            $('#treeview').on('select_node.jstree', function(e, data) {
+                const objId = data.node.id;
+                const svgFile = `diagrams/${objId}.svg`;
+              //  const svgFile = `/diagrams/${objId}.svg`;
+                
+                // Загрузка SVG файла
+                $.get(svgFile)
+                    .done(function(svgContent) {
+                        $('#diagram-content').html(svgContent);
+                        $('#comment-content').text(`Отображается файл: ${objId}.svg`);
+                    })
+                    .fail(function() {
+                        $('#diagram-content').html(`<div style="color: red; text-align: center;">
+                            <p>Файл ${svgFile} не найден</p>
+                            <p>Создайте файлы diagrams/obj1.svg, diagrams/obj11.svg, diagrams/obj111.svg</p>
+                        </div>`);
+                        $('#comment-content').text(`Ошибка загрузки: ${objId}.svg`);
+                    });
+            });
+            
+            // Инициализация начального состояния
+            $('#treeview').jstree('select_node', 'obj1');
+        });
+    </script>
+</body>
+</html>
