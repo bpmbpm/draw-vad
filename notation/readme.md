@@ -21,7 +21,7 @@
 - сделать свой шейп \ имя шейпа. Если через вкладку 
 Например: Создали step (библиотека Общие). Его нужно исправить, т.к. работать с ним сложно: стрелка в левую сторону shape перекрывает текст. Поэтому нужно «выпрямить» левую сторону shape=step.  
 Делаем собственную фигуру «Исправленный step»: **Положение \ добавить \ фигура.**
-` <shape name="stencilName1" h="24" w="100" aspect="variable" strokewidth="inherit">
+``` <shape name="stencilName1" h="24" w="100" aspect="variable" strokewidth="inherit">
   <background>
     <path>
       <move x="0" y="0"/>
@@ -37,7 +37,7 @@
     
     <stroke/>
   </foreground>
-</shape> `
+</shape> ```
 Хотя можно взять и схожие: Signal-in arrow (Стрелки) или Send Object Action (UML 2.5).  
 https://www.drawio.com/doc/faq/shape-complex-create-edit  
 https://www.drawio.com/doc/faq/custom-shapes  
