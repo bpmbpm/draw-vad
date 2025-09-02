@@ -37,7 +37,8 @@
     
     <stroke/>
   </foreground>
-</shape> ```
+</shape>
+```
 Хотя можно взять и схожие: Signal-in arrow (Стрелки) или Send Object Action (UML 2.5).  
 https://www.drawio.com/doc/faq/shape-complex-create-edit  
 https://www.drawio.com/doc/faq/custom-shapes  
