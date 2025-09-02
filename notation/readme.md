@@ -1,5 +1,5 @@
-### VAD MetaModel
-#### Stencil
+## VAD MetaModel
+### Stencil
 Создаем трафарет, [Stencil](https://github.com/bpmbpm/doc/blob/main/BPM/graphic_editor/visio/terms.md) - корпоративный трафарет VAD.  
 Состав:
 #### Shape
@@ -42,5 +42,7 @@
 Хотя можно взять и схожие: Signal-in arrow (Стрелки) или Send Object Action (UML 2.5).  
 https://www.drawio.com/doc/faq/shape-complex-create-edit  
 https://www.drawio.com/doc/faq/custom-shapes  
+#### Problem 1
 Проблема в том, что а) создается длинное и непонятное имя шейпа б) все равно нужно доопрделять стиль (style) цвет и т.п.  
 Текущее решение: используем стандартные шейпы, в стиле определяем ключевой элемент цвет или название шейпа и по нему определяем тип фигуры \ объекта.  
+см. vad5.drawio \ lib5.xml
