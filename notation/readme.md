@@ -17,7 +17,7 @@
 
 ### Pic
 При отрисовке соединения (предиката), проверить а) в XML: source="Название_процесса_1" edge="1" target="Название_процесса_2"> и файле:  
-![ris1](https://github.com/bpmbpm/draw-vad/edit/main/notation/pic/VAD_notation.png)
+![ris1](http://github.com/bpmbpm/draw-vad/edit/main/notation/pic/VAD_notation.png)
 
 
 ### 3 Problem
