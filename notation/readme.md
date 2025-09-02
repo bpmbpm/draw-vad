@@ -53,3 +53,4 @@ https://www.drawio.com/doc/faq/custom-shapes
 
 ### Help
 - Дополнительно \ Редактировать диаграмму (XML)
+- Кодировка UTF-0 no BOM
