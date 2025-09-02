@@ -20,7 +20,25 @@
 - стандартными шейпами
 - сделать свой шейп \ имя шейпа. Если через вкладку 
 Например: Создали step (библиотека Общие). Его нужно исправить, т.к. работать с ним сложно: стрелка в левую сторону shape перекрывает текст. Поэтому нужно «выпрямить» левую сторону shape=step.  
-Делаем собственную фигуру «Исправленный step»: **Положение \ добавить \ фигура.**   
+Делаем собственную фигуру «Исправленный step»: **Положение \ добавить \ фигура.**
+` <shape name="stencilName1" h="24" w="100" aspect="variable" strokewidth="inherit">
+  <background>
+    <path>
+      <move x="0" y="0"/>
+      <line x="80" y="0"/>
+      <line x="100" y="12"/>
+      <line x="80" y="24"/>
+      <line x="0" y="24"/>
+      <close/>
+    </path>
+  </background>
+  <foreground>
+    <fillstroke/>
+    
+    <stroke/>
+  </foreground>
+</shape>
+`
 Хотя можно взять и схожие: Signal-in arrow (Стрелки) или Send Object Action (UML 2.5).  
 https://www.drawio.com/doc/faq/shape-complex-create-edit  
 https://www.drawio.com/doc/faq/custom-shapes  
