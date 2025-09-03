@@ -33,8 +33,8 @@
 - название процесса style="text, fontColor=#333333
 - Важно: стрелка, сам shape style="endArrow=classic; и стрелка, подпись к стрелке имеет style="edgeLabel;
 Однако если оба конца соединены, то примечание уже в одном шейпе с value="". Например:
-``` <mxCell id="Название_процесса_1!Название_процесса_2" value="text33" style="endArrow=classic;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;" edge="1" parent="1" source="Название_процесса_1" target="Название_процесса_2">```
-Для надписи на стрелке - нужно выделить стрелку и нажать Enter и тогда редакторовать value (иначе создается рядом отдельный объект text).
+``` <mxCell id="Название_процесса_1!Название_процесса_2" value="text33" style="endArrow=classic;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;" edge="1" parent="1" source="Название_процесса_1" target="Название_процесса_2">```  
+Для добавления \ редактирования надписи на стрелке - нужно выделить стрелку и нажать Enter и тогда редакторовать value (иначе создается рядом отдельный объект text).
 
 ### 3 Problem
 Как в XML задавать тип фигуры? 
