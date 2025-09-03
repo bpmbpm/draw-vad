@@ -1,0 +1,69 @@
+<mxfile host="Electron" modified="2025-09-02T14:53:36.457Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/24.6.4 Chrome/124.0.6367.207 Electron/30.0.6 Safari/537.36" etag="DLoNH58mQZkE3QpJr4th" version="24.6.4" type="device">
+  <diagram id="wL00BTP5yB8H8YGWc6yf" name="Страница — 1">
+    <mxGraphModel dx="1418" dy="828" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="Название_процесса_1" value="Название процесса 1" style="html=1;shadow=0;dashed=0;align=center;verticalAlign=middle;shape=mxgraph.arrows2.arrow;dy=0;dx=10;notch=0;whiteSpace=wrap;fillColor=#B9E0A6;" parent="1" vertex="1">
+          <mxGeometry x="80" y="160" width="100" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="Название_процесса_1!Role" value="Исполнитель процесса" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;whiteSpace=wrap;fontColor=#1A1A1A;" parent="Название_процесса_1" vertex="1">
+          <mxGeometry y="1" width="100" height="19" relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Название_процесса_1!Com" value="" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;whiteSpace=wrap;fontColor=#FF6666;" parent="Название_процесса_1" vertex="1">
+          <mxGeometry y="1" width="100" height="19" relative="1" as="geometry">
+            <mxPoint x="60" y="-84" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Название_процесса_2" value="Название процесса 2" style="html=1;shadow=0;dashed=0;align=center;verticalAlign=middle;shape=mxgraph.arrows2.arrow;dy=0;dx=10;notch=0;whiteSpace=wrap;strokeColor=none;fillColor=#B9E0A5;" parent="1" vertex="1">
+          <mxGeometry x="240" y="160" width="100" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="Название_процесса_2!Role" value="Исполнитель процесса" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;whiteSpace=wrap;fontColor=#1A1A1A;" parent="Название_процесса_2" vertex="1">
+          <mxGeometry y="1" width="100" height="19" relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Название_процесса_2!Com" value="**" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;whiteSpace=wrap;fontColor=#FF6666;" parent="Название_процесса_2" vertex="1">
+          <mxGeometry y="1" width="100" height="19" relative="1" as="geometry">
+            <mxPoint x="60" y="-84" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Название_процесса_3" value="Название процесса 3" style="html=1;shadow=0;dashed=0;align=center;verticalAlign=middle;shape=mxgraph.arrows2.arrow;dy=0;dx=10;notch=0;whiteSpace=wrap;fillColor=#D4E1F5;" parent="1" vertex="1">
+          <mxGeometry x="400" y="160" width="100" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="Название_процесса_3!Role" value="Исполнитель процесса" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;whiteSpace=wrap;fontColor=#1A1A1A;" parent="Название_процесса_3" vertex="1">
+          <mxGeometry y="1" width="100" height="19" relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Название_процесса_3!Com" value="" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;whiteSpace=wrap;fontColor=#FF6666;" parent="Название_процесса_3" vertex="1">
+          <mxGeometry y="1" width="100" height="19" relative="1" as="geometry">
+            <mxPoint x="60" y="-84" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Код_процесса" value="Код процесса" style="shape=partialRectangle;html=1;right=0;top=0;bottom=0;fillColor=none;routingCenterX=-0.5;align=left;" parent="1" vertex="1">
+          <mxGeometry x="80" y="10" width="120" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="Код_процесса!Name" value="Название процесса" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;fontColor=#333333;" parent="Код_процесса" vertex="1">
+          <mxGeometry y="1" width="750" height="19" relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Note_1" value="Note 1" style="shape=note;size=20;whiteSpace=wrap;html=1;align=left;verticalAlign=top;" parent="1" vertex="1">
+          <mxGeometry x="40" y="280" width="680" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="GgY7tvCGzWiHzhKeHOsg-1" value="" style="endArrow=classic;html=1;rounded=0;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="100" y="490" as="sourcePoint" />
+            <mxPoint x="150" y="440" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="w-dDWuDKaZunCr8cs9wA-1" value="Text1" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="GgY7tvCGzWiHzhKeHOsg-1">
+          <mxGeometry x="0.06" y="-1" relative="1" as="geometry">
+            <mxPoint y="-1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Название_процесса_1!Название_процесса_2" value="text33" style="endArrow=classic;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;" edge="1" parent="1" source="Название_процесса_1" target="Название_процесса_2">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="180" y="190" as="sourcePoint" />
+            <mxPoint x="241" y="190" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
