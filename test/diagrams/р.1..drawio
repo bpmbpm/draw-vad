@@ -1,0 +1,40 @@
+<mxfile host="Electron" modified="2025-09-12T10:41:31.607Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/24.6.4 Chrome/124.0.6367.207 Electron/30.0.6 Safari/537.36" etag="n8YAeh0tWyRcUx4j0YN3" version="24.6.4" type="device">
+  <diagram id="рр.1." name="Страница — 1">
+    <mxGraphModel dx="1418" dy="828" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <object label="" code="" name="" fname="" stype="" owner="" criticality="" status="" version="" level="" id="0">
+          <mxCell />
+        </object>
+        <mxCell id="1" parent="0" />
+        <mxCell id="р.1." value="р.1." style="shape=partialRectangle;html=1;right=0;top=0;bottom=0;fillColor=none;routingCenterX=-0.5;align=left;whiteSpace=wrap;fontColor=#333332;" parent="1" vertex="1">
+          <mxGeometry x="80" y="40" width="240" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="р.1.!Name" value="Привлечение средств во вклады" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=top;whiteSpace=wrap;fontColor=#333333;" parent="р.1." vertex="1">
+          <mxGeometry y="1" width="750" height="19" relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="р.1.1." value="р.1.1.Привлечение средств во вклады ФЛ" style="html=1;shadow=0;dashed=0;align=center;verticalAlign=middle;shape=mxgraph.arrows2.arrow;dy=0;dx=10;notch=0;whiteSpace=wrap;fillColor=#B9E0A6;" parent="1" vertex="1">
+          <mxGeometry x="80" y="160" width="100" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="р.1.1.!Role" value="&amp;nbsp;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;whiteSpace=wrap;fontColor=#1A1A1A;" parent="р.1.1." vertex="1">
+          <mxGeometry y="1" width="100" height="19" relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="р.1.1.!Com" value="" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;whiteSpace=wrap;fontColor=#FF6666;" parent="р.1.1." vertex="1">
+          <mxGeometry y="1" width="100" height="19" relative="1" as="geometry">
+            <mxPoint x="60" y="-84" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="р.1.2." value="р.1.2.Привлечение средств во вклады ЮЛ" style="html=1;shadow=0;dashed=0;align=center;verticalAlign=middle;shape=mxgraph.arrows2.arrow;dy=0;dx=10;notch=0;whiteSpace=wrap;strokeColor=none;fillColor=#B9E0A5;" parent="1" vertex="1">
+          <mxGeometry x="80" y="280" width="100" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="р.1.2.!Role" value="&amp;nbsp;" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;whiteSpace=wrap;fontColor=#1A1A1A;" parent="р.1.2." vertex="1">
+          <mxGeometry y="1" width="100" height="19" relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="р.1.2.!Com" value="" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;whiteSpace=wrap;fontColor=#FF6666;" parent="р.1.2." vertex="1">
+          <mxGeometry y="1" width="100" height="19" relative="1" as="geometry">
+            <mxPoint x="60" y="-84" as="offset" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
