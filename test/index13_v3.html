@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Treeview with Diagrams</title>
+    <!-- Подключаем стили jstree -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.15/themes/default/style.min.css" />
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            grid-template-rows: 1fr;
+            height: 100vh;
+        }
+        .left-panel {
+            display: grid;
+            grid-template-rows: 1fr 1fr;
+            border-right: 1px solid #ccc;
+        }
+        .panel {
+            padding: 15px;
+            overflow: auto;
+            border-bottom: 1px solid #ccc;
+        }
+        #treeview {
+            background: #f8f9fa;
+        }
+        #diagrams {
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+        }
+        #comments {
+            background: #f0f0f0;
+            font-family: monospace;
+            border-bottom: none;
+        }
+        .diagram-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #ccc;
+        }
+        .diagram-title {
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .drawio-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: auto;
+        }
+        .drawio-container iframe {
+            width: 100%;
+            height: 100%;
+            border: 1px solid #eee;
+        }
+        .header {
+            font-weight: bold;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #ccc;
+        }
+        
+        /* Стили для главного меню */
+        .main-menu {
+            display: flex;
+            gap: 5px;
+        }
+        .menu-btn {
+            padding: 8px 15px;
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+        .menu-btn:hover {
+            background-color: #e0e0e0;
+        }
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+            border-radius: 4px;
+        }
+        .dropdown-content a {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            font-size: 14px;
+        }
+        .dropdown-content a:hover {
+            background-color: #f1f1f1;
+        }
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+        
+        /* Модальное окно настроек */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 50%;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close:hover {
+            color: black;
+        }
+        .settings-group {
+            margin-bottom: 15px;
+        }
+        .settings-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .settings-group select, 
+        .settings-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .save-btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .save-btn:hover {
+            background-color: #45a049;
+        }
+        
+        /* Адаптивность для мобильных устройств */
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+                grid-template-rows: 300px 1fr 200px;
+            }
+            .left-panel {
+                grid-template-rows: auto;
+                border-right: none;
+            }
+            .main-menu {
+                flex-direction: column;
+            }
+            .modal-content {
+                width: 80%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Модальное окно настроек -->
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Настройки</h2>
+            <div class="settings-group">
+                <label for="mode-select">Режим:</label>
+                <select id="mode-select">
+                    <option value="view">Просмотр (view)</option>
+                    <option value="edit">Редактирование (edit)</option>
+                </select>
+            </div>
+            <button class="save-btn">Сохранить настройки</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="left-panel">
+            <div id="treeview" class="panel">
+                <div class="header">Дерево объектов</div>
+                <!-- jstree будет инициализирован здесь -->
+            </div>
+            
+            <div id="comments" class="panel">
+                <div class="header">Комментарии</div>
+                <!-- Информация о файле будет здесь -->
+                <div id="comment-content">Файл не выбран</div>
+            </div>
+        </div>
+        
+        <div id="diagrams" class="panel">
+            <div class="diagram-header">
+                <div class="main-menu">
+                    <div class="menu-btn">Файл</div>
+                    <div class="dropdown">
+                        <div class="menu-btn">Вид</div>
+                        <div class="dropdown-content">
+                            <a href="#" id="settings-option">Настройка</a>
+                        </div>
+                    </div>
+                    <div class="menu-btn">Справка</div>
+                </div>
+                <div class="diagram-title">Диаграмма</div>
+            </div>
+            <!-- Draw.io будет загружаться сюда -->
+            <div id="diagram-content" class="drawio-container">Загрузка корневой диаграммы...</div>
+        </div>
+    </div>
+
+    <!-- Подключаем jQuery и jstree -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.15/jstree.min.js"></script>
+    
+    <script>
+        $(document).ready(function() {
+            // Базовые настройки для нового репозитория
+            const githubUsername = 'bpmbpm';
+            const githubRepo = 'draw-vad';
+            const githubBranch = 'main';
+            const diagramsFolder = 'test/diagrams';
+            
+            // Текущий файл и режим
+            let currentFile = 'root.drawio';
+            let viewMode = localStorage.getItem('viewMode') || 'view';
+
+            // Функция для формирования URL Draw.io
+            function getDrawioUrl(fileName) {
+                // Формируем URL к файлу на GitHub Pages
+                const fileUrl = `https://${githubUsername}.github.io/${githubRepo}/${diagramsFolder}/${fileName}`;
+                
+                // Получаем текущий режим из localStorage
+                const currentMode = localStorage.getItem('viewMode') || 'view';
+                
+                // Формируем URL для Draw.io в зависимости от режима
+                if (currentMode === 'edit') {
+                    return `https://app.diagrams.net/?lightbox=1&highlight=0000ff&edit=_blank&layers=1&nav=1&title=#U${encodeURIComponent(fileUrl)}`;
+                } else {
+                    return `https://app.diagrams.net/?lightbox=1&highlight=0000ff&layers=1&nav=1&title=#U${encodeURIComponent(fileUrl)}`;
+                }
+            }
+
+            // Функция для загрузки Draw.io диаграммы
+            function loadDrawio(fileName, comment) {
+                // Сохраняем текущий файл
+                currentFile = fileName;
+                
+                // Обновляем информацию о пути
+                $('#comment-content').text(comment || `Загружается файл: ${fileName}`);
+                
+                // Очищаем предыдущий контент
+                $('#diagram-content').html('<div>Загрузка диаграммы...</div>');
+                
+                // Формируем URL для Draw.io
+                const drawioUrl = getDrawioUrl(fileName);
+                
+                // Создаем iframe для отображения Draw.io диаграммы
+                const iframe = document.createElement('iframe');
+                iframe.src = drawioUrl;
+                iframe.onload = function() {
+                    $('#comment-content').text(`Отображается файл: ${fileName} (режим: ${localStorage.getItem('viewMode') || 'view'})`);
+                };
+                iframe.onerror = function() {
+                    $('#diagram-content').html(`<div style="color: red; text-align: center;">
+                        <p>Не удалось загрузить файл ${fileName}</p>
+                        <p>Проверьте:</p>
+                        <ul>
+                            <li>Существует ли файл в репозитории</li>
+                            <li>Правильно ли указаны настройки GitHub</li>
+                        </ul>
+                    </div>`);
+                    $('#comment-content').text(`Ошибка загрузки: ${fileName}`);
+                };
+                
+                $('#diagram-content').html(iframe);
+            }
+
+            // Загружаем корневую диаграмму при запуске
+            loadDrawio('root.drawio', 'Корневая диаграмма');
+
+            // Инициализация jstree с пользовательскими данными
+            $('#treeview').jstree({
+                'core': {
+                    'data': [
+                        {
+                            "text": "Архитектура компании",
+                            "id": "ea.",
+                            "file": "ea..drawio",
+                            "children": [
+                                {
+                                    "text": "Процессная архитектура (нулевой процесс)",
+                                    "id": "p.",
+                                    "file": "p..drawio",
+                                    "children": [
+                                        {
+                                            "text": "Привлечение средств во вклады", 
+                                            "id": "p.1.",
+                                            "file": "p.1..drawio",
+                                            "icon": "jstree-file"
+                                        },
+                                        {
+                                            "text": "Кредитование", 
+                                            "id": "p.2.",
+                                            "file": "p.2..drawio",
+                                            "icon": "jstree-file"
+                                        }
+
+                                        
+                                    ]
+                                }
+                            ]
+                        }
+                    ],
+                    'themes': {
+                        'dots': true,
+                        'icons': true
+                    }
+                }
+            });
+            
+            // Обработчик выбора узла в дереве
+            $('#treeview').on('select_node.jstree', function(e, data) {
+                const node = data.node;
+                const objId = node.id;
+                
+                // Используем пользовательское имя файла, если оно задано, иначе используем id
+                const fileName = node.original && node.original.file ? node.original.file : `${objId}.drawio`;
+                
+                // Загружаем соответствующую Draw.io диаграмму
+                loadDrawio(fileName, `Загружается файл: ${fileName}`);
+            });
+
+            // Обработчики для меню
+            const modal = document.getElementById("settingsModal");
+            const settingsOption = document.getElementById("settings-option");
+            const span = document.getElementsByClassName("close")[0];
+            const saveBtn = document.querySelector(".save-btn");
+            
+            // Устанавливаем текущее значение режима в выпадающем списке
+            document.getElementById("mode-select").value = viewMode;
+            
+            // Открытие модального окна при выборе "Настройка"
+            settingsOption.onclick = function() {
+                modal.style.display = "block";
+            }
+            
+            // Закрытие модального окна при клике на крестик
+            span.onclick = function() {
+                modal.style.display = "none";
+            }
+            
+            // Закрытие модального окна при клике вне его области
+            window.onclick = function(event) {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
+            }
+            
+            // Сохранение настроек
+            saveBtn.onclick = function() {
+                const selectedMode = document.getElementById("mode-select").value;
+                localStorage.setItem('viewMode', selectedMode);
+                viewMode = selectedMode;
+                
+                // Перезагружаем текущую диаграмму с новыми настройками
+                loadDrawio(currentFile, `Режим изменен на: ${selectedMode}. Загружается файл: ${currentFile}`);
+                
+                // Закрываем модальное окно
+                modal.style.display = "none";
+            }
+        });
+    </script>
+</body>
+</html>
