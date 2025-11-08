@@ -261,12 +261,13 @@
             // Всегда используем режим view при запуске
             let viewMode = 'view';
 
-            // Функция для формирования URL Draw.io
+            // Функция для формирования URL Draw.io (поддерживает .drawio и .vsdx файлы)
             function getDrawioUrl(fileName) {
                 // Формируем URL к файлу на GitHub Pages
                 const fileUrl = `https://${githubUsername}.github.io/${githubRepo}/${diagramsFolder}/${fileName}`;
-                
+
                 // Формируем URL для Draw.io в зависимости от режима
+                // Draw.io поддерживает как .drawio, так и .vsdx файлы
                 if (viewMode === 'edit') {
                     return `https://app.diagrams.net/?lightbox=1&highlight=0000ff&edit=_blank&layers=1&nav=1&title=#U${encodeURIComponent(fileUrl)}`;
                 } else {
@@ -274,25 +275,29 @@
                 }
             }
 
-            // Функция для загрузки Draw.io диаграммы
+            // Функция для загрузки диаграммы (поддерживает .drawio и .vsdx файлы)
             function loadDrawio(fileName, comment) {
                 // Сохраняем текущий файл
                 currentFile = fileName;
-                
+
+                // Определяем тип файла для информационного сообщения
+                const fileExtension = fileName.split('.').pop().toLowerCase();
+                const fileType = fileExtension === 'vsdx' ? 'Visio' : 'Draw.io';
+
                 // Обновляем информацию о пути
                 $('#comment-content').text(comment || `Загружается файл: ${fileName}`);
-                
+
                 // Очищаем предыдущий контент
                 $('#diagram-content').html('<div>Загрузка диаграммы...</div>');
-                
-                // Формируем URL для Draw.io
+
+                // Формируем URL для Draw.io (поддерживает и .vsdx файлы)
                 const drawioUrl = getDrawioUrl(fileName);
-                
-                // Создаем iframe для отображения Draw.io диаграммы
+
+                // Создаем iframe для отображения диаграммы
                 const iframe = document.createElement('iframe');
                 iframe.src = drawioUrl;
                 iframe.onload = function() {
-                    $('#comment-content').text(`Отображается файл: ${fileName} (режим: ${viewMode})`);
+                    $('#comment-content').text(`Отображается файл: ${fileName} (тип: ${fileType}, режим: ${viewMode})`);
                 };
                 iframe.onerror = function() {
                     $('#diagram-content').html(`<div style="color: red; text-align: center;">
@@ -301,11 +306,12 @@
                         <ul>
                             <li>Существует ли файл в репозитории</li>
                             <li>Правильно ли указаны настройки GitHub</li>
+                            <li>Поддерживаемые форматы: .drawio, .vsdx</li>
                         </ul>
                     </div>`);
                     $('#comment-content').text(`Ошибка загрузки: ${fileName}`);
                 };
-                
+
                 $('#diagram-content').html(iframe);
             }
 
@@ -327,20 +333,24 @@
                                     "file": "p..drawio",
                                     "children": [
                                         {
-                                            "text": "Привлечение средств во вклады", 
+                                            "text": "Привлечение средств во вклады",
                                             "id": "p.1.",
                                             "file": "p.1..drawio",
                                             "icon": "jstree-file"
                                         },
                                         {
-                                            "text": "Кредитование", 
+                                            "text": "Кредитование",
                                             "id": "p.2.",
                                             "file": "p.2..drawio",
                                             "icon": "jstree-file"
                                         }
-
-                                        
                                     ]
+                                },
+                                {
+                                    "text": "Организационная структура (Visio)",
+                                    "id": "org-structure",
+                                    "file": "org-structure.vsdx",
+                                    "icon": "jstree-file"
                                 }
                             ]
                         }
