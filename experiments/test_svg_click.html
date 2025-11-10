@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SVG Click Detection Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 20px;
+        }
+        #diagram-container {
+            border: 1px solid #ccc;
+            padding: 10px;
+            min-height: 400px;
+        }
+        #info-panel {
+            border: 1px solid #ccc;
+            padding: 10px;
+            background-color: #f0f0f0;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        #diagram-container svg {
+            max-width: 100%;
+            height: auto;
+            cursor: pointer;
+        }
+        .highlight {
+            stroke: #0000ff !important;
+            stroke-width: 3 !important;
+        }
+    </style>
+</head>
+<body>
+    <h1>SVG Click Detection Experiment</h1>
+
+    <div class="container">
+        <div id="diagram-container">
+            <h2>Диаграмма (SVG)</h2>
+            <div id="svg-content"></div>
+        </div>
+
+        <div id="info-panel">
+            <h2>Комментарии</h2>
+            <div id="shape-info">
+                <p>Кликните на элемент диаграммы</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load SVG from GitHub
+        const svgUrl = 'https://raw.githubusercontent.com/bpmbpm/draw-vad/main/test/diagrams/root.svg';
+
+        fetch(svgUrl)
+            .then(response => response.text())
+            .then(svgData => {
+                document.getElementById('svg-content').innerHTML = svgData;
+
+                const svg = document.querySelector('#svg-content svg');
+                if (!svg) {
+                    console.error('SVG not found');
+                    return;
+                }
+
+                console.log('SVG loaded successfully');
+
+                // Add click listener to all SVG elements
+                svg.addEventListener('click', function(e) {
+                    // Remove previous highlights
+                    document.querySelectorAll('.highlight').forEach(el => {
+                        el.classList.remove('highlight');
+                    });
+
+                    let target = e.target;
+                    console.log('Clicked:', target);
+
+                    // Highlight the clicked element
+                    if (target.tagName !== 'svg') {
+                        target.classList.add('highlight');
+                    }
+
+                    // Collect information about the clicked element
+                    let info = {
+                        tagName: target.tagName,
+                        id: target.id || 'no id',
+                        className: target.className.baseVal || target.className || 'no class'
+                    };
+
+                    // Get all attributes
+                    let attributes = {};
+                    for (let attr of target.attributes) {
+                        attributes[attr.name] = attr.value;
+                    }
+
+                    // Get text content if available
+                    let textContent = target.textContent?.trim();
+
+                    // Look for parent group information
+                    let parent = target.parentElement;
+                    let parentInfo = [];
+                    while (parent && parent.tagName !== 'svg') {
+                        parentInfo.push({
+                            tag: parent.tagName,
+                            id: parent.id || 'no id',
+                            class: parent.className.baseVal || 'no class'
+                        });
+                        parent = parent.parentElement;
+                    }
+
+                    // Display information
+                    let output = '<h3>Clicked Element:</h3>';
+                    output += '<strong>Tag:</strong> ' + info.tagName + '<br>';
+                    output += '<strong>ID:</strong> ' + info.id + '<br>';
+                    output += '<strong>Class:</strong> ' + info.className + '<br>';
+
+                    if (textContent) {
+                        output += '<strong>Text:</strong> ' + textContent + '<br>';
+                    }
+
+                    output += '<br><strong>Attributes:</strong><br>';
+                    output += '<pre>' + JSON.stringify(attributes, null, 2) + '</pre>';
+
+                    if (parentInfo.length > 0) {
+                        output += '<br><strong>Parent Hierarchy:</strong><br>';
+                        output += '<pre>' + JSON.stringify(parentInfo, null, 2) + '</pre>';
+                    }
+
+                    document.getElementById('shape-info').innerHTML = output;
+                });
+            })
+            .catch(error => {
+                console.error('Error loading SVG:', error);
+                document.getElementById('svg-content').innerHTML =
+                    '<p style="color: red;">Error loading SVG: ' + error.message + '</p>';
+            });
+    </script>
+</body>
+</html>

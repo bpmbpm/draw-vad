@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Draw.io Viewer Click Detection Test</title>
+    <script src="https://www.draw.io/js/viewer.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 20px;
+        }
+        #diagram-container {
+            border: 1px solid #ccc;
+            padding: 10px;
+            min-height: 400px;
+        }
+        #info-panel {
+            border: 1px solid #ccc;
+            padding: 10px;
+            background-color: #f0f0f0;
+        }
+        .mxgraph {
+            max-width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <h1>Draw.io Viewer Click Detection Experiment</h1>
+
+    <div class="container">
+        <div id="diagram-container">
+            <h2>Диаграмма</h2>
+            <div id="diagram-content">Loading...</div>
+        </div>
+
+        <div id="info-panel">
+            <h2>Комментарии</h2>
+            <div id="shape-info">
+                <p>Файл не выбран</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load the diagram from GitHub
+        const diagramUrl = 'https://raw.githubusercontent.com/bpmbpm/draw-vad/main/test/diagrams/root.drawio';
+
+        fetch(diagramUrl)
+            .then(response => response.text())
+            .then(data => {
+                // Extract XML from the drawio file
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(data, 'text/xml');
+
+                // Create div for mxGraph
+                const diagramDiv = document.createElement('div');
+                diagramDiv.className = 'mxgraph';
+                diagramDiv.style.maxWidth = '100%';
+                diagramDiv.style.border = '1px solid transparent';
+
+                // Set the mxGraph data
+                const graphData = {
+                    highlight: '#0000ff',
+                    nav: true,
+                    resize: true,
+                    toolbar: 'zoom layers lightbox',
+                    xml: data
+                };
+
+                diagramDiv.setAttribute('data-mxgraph', JSON.stringify(graphData));
+
+                // Add to DOM
+                document.getElementById('diagram-content').innerHTML = '';
+                document.getElementById('diagram-content').appendChild(diagramDiv);
+
+                // Process the elements
+                if (window.GraphViewer) {
+                    window.GraphViewer.processElements();
+
+                    // Try to access the graph after processing
+                    setTimeout(() => {
+                        console.log('GraphViewer:', window.GraphViewer);
+
+                        // Try to find SVG elements and add click listeners
+                        const svgElements = document.querySelectorAll('svg');
+                        console.log('Found SVG elements:', svgElements.length);
+
+                        svgElements.forEach((svg, index) => {
+                            console.log('SVG', index, ':', svg);
+
+                            // Add click listener to SVG
+                            svg.addEventListener('click', function(e) {
+                                console.log('SVG clicked!', e.target);
+
+                                // Try to get cell/shape information
+                                let target = e.target;
+                                let cellInfo = {
+                                    tagName: target.tagName,
+                                    id: target.id,
+                                    className: target.className.baseVal || target.className,
+                                    innerHTML: target.innerHTML
+                                };
+
+                                // Look for data attributes
+                                for (let attr of target.attributes) {
+                                    if (attr.name.startsWith('data-')) {
+                                        cellInfo[attr.name] = attr.value;
+                                    }
+                                }
+
+                                // Check parent elements for cell ID
+                                let parent = target.parentElement;
+                                while (parent && parent !== svg) {
+                                    if (parent.getAttribute('data-cell-id')) {
+                                        cellInfo.cellId = parent.getAttribute('data-cell-id');
+                                    }
+                                    parent = parent.parentElement;
+                                }
+
+                                document.getElementById('shape-info').innerHTML =
+                                    '<h3>Clicked Element:</h3>' +
+                                    '<pre>' + JSON.stringify(cellInfo, null, 2) + '</pre>';
+                            });
+                        });
+
+                        // Also try to add listeners to individual shapes
+                        const shapes = document.querySelectorAll('[data-cell-id]');
+                        console.log('Found shapes with data-cell-id:', shapes.length);
+
+                    }, 1000);
+                }
+            })
+            .catch(error => {
+                console.error('Error loading diagram:', error);
+                document.getElementById('diagram-content').innerHTML =
+                    '<p style="color: red;">Error loading diagram: ' + error.message + '</p>';
+            });
+    </script>
+</body>
+</html>
