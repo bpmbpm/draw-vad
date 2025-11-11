@@ -5,5 +5,5 @@ const fileUrl = `https://${githubUsername}.github.io/${githubRepo}/${diagramsFol
 
 ### Info
 - index13_v4.html Базовая
-- index13_v4visio.html добавлены файлв visio
+- index13_v4visio.html добавлены "Примеры просмотра файлов" Visio (показывает из коробки), PDF, SVG
 - index13_v5.html результат
