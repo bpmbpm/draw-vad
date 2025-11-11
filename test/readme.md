@@ -6,6 +6,8 @@
 
 
 ### test File
+https://bpmbpm.github.io/draw-vad/test/index13_v4.html
+
 ```
 // Формируем URL к файлу на GitHub Pages  
 const fileUrl = `https://${githubUsername}.github.io/${githubRepo}/${diagramsFolder}/${fileName}`;
