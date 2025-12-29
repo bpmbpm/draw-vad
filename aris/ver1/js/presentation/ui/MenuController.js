@@ -155,6 +155,9 @@ class MenuController {
             case 'help-epc':
                 this.app.showHelp('epc');
                 break;
+            case 'help-bpmn':
+                this.app.showHelp('bpmn');
+                break;
             case 'help-org':
                 this.app.showHelp('org');
                 break;

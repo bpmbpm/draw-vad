@@ -39,13 +39,70 @@ class ArisExpressApp {
         console.log('Initializing ARIS Express Clone...');
         this.setStatus('Готов');
 
+        // Initialize model explorer with examples
+        this.initModelExplorer();
+
         // Load welcome message or last diagram
         this.showWelcome();
     }
 
+    initModelExplorer() {
+        const modelTree = document.getElementById('model-tree');
+        if (!modelTree) return;
+
+        const examples = [
+            { name: 'VAD Пример 1 - Управление заказами', file: 'examples/vad_example_1.drawio', type: 'vad' },
+            { name: 'VAD Пример 2 - Производственный цикл', file: 'examples/vad_example_2.drawio', type: 'vad' },
+            { name: 'EPC Пример 1 - Обработка заявки', file: 'examples/epc_example_1.drawio', type: 'epc' },
+            { name: 'EPC Пример 2 - Обработка заказа', file: 'examples/epc_example_2.drawio', type: 'epc' },
+            { name: 'BPMN Пример 1 - Простой процесс', file: 'examples/bpmn_example_1.drawio', type: 'bpmn' },
+            { name: 'BPMN Пример 2 - Процесс с пулами', file: 'examples/bpmn_example_2.drawio', type: 'bpmn' },
+            { name: 'Org Пример 1 - Структура компании', file: 'examples/org_example_1.drawio', type: 'org' },
+            { name: 'Org Пример 2 - IT Отдел', file: 'examples/org_example_2.drawio', type: 'org' }
+        ];
+
+        let html = '<div class="model-tree-section"><div class="tree-header">Примеры</div><ul class="tree-list">';
+        examples.forEach((example, index) => {
+            html += `<li class="tree-item" data-example-index="${index}" data-example-file="${example.file}">
+                <span class="tree-icon">📄</span>
+                <span class="tree-label">${example.name}</span>
+            </li>`;
+        });
+        html += '</ul></div>';
+
+        modelTree.innerHTML = html;
+
+        // Attach click handlers
+        modelTree.querySelectorAll('.tree-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const file = item.getAttribute('data-example-file');
+                this.loadExampleDiagram(file);
+            });
+        });
+
+        this.examplesList = examples;
+    }
+
+    async loadExampleDiagram(filePath) {
+        try {
+            const response = await fetch(filePath);
+            if (!response.ok) {
+                throw new Error(`Failed to load example: ${filePath}`);
+            }
+
+            const xml = await response.text();
+            this.currentDiagram = this.diagramService.importFromDrawio(xml);
+            this.canvasController.setDiagram(this.currentDiagram);
+            this.setStatus(`Загружен пример: ${this.currentDiagram.name || filePath}`);
+        } catch (error) {
+            console.error('Error loading example:', error);
+            alert('Ошибка при загрузке примера: ' + error.message);
+        }
+    }
+
     showWelcome() {
         console.log('Application ready');
-        this.setStatus('Готов к работе. Выберите Файл → Создать или Модель → Новая диаграмма');
+        this.setStatus('Готов к работе. Выберите Файл → Создать или Модель → Новая диаграмма, либо откройте пример из Проводника моделей');
     }
 
     // ========== File Operations ==========
@@ -89,10 +146,28 @@ class ArisExpressApp {
             return;
         }
 
-        const newName = prompt('Введите новое имя диаграммы:', this.currentDiagram.name);
+        const newName = prompt('Введите имя файла для сохранения:', this.currentDiagram.name);
         if (newName) {
-            this.currentDiagram.name = newName;
-            this.saveDiagram();
+            try {
+                // Export diagram to DrawIO XML format
+                const xml = this.diagramService.exportToDrawio(this.currentDiagram);
+                const blob = new Blob([xml], { type: 'application/xml' });
+                const url = URL.createObjectURL(blob);
+
+                // Create download link and trigger download
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${newName}.drawio`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+
+                URL.revokeObjectURL(url);
+                this.setStatus(`Диаграмма сохранена как "${newName}.drawio"`);
+            } catch (error) {
+                console.error('Error saving diagram:', error);
+                alert('Ошибка при сохранении: ' + error.message);
+            }
         }
     }
 
@@ -380,6 +455,22 @@ ${AppConfig.app.description}
             this.setStatus(`Добавлен элемент: ${element.name}`);
         } catch (error) {
             console.error('Error adding element:', error);
+            alert('Ошибка при добавлении элемента: ' + error.message);
+        }
+    }
+
+    addElementFromStencil(notation, stencilData) {
+        if (!this.currentDiagram) {
+            alert('Сначала создайте диаграмму');
+            return;
+        }
+
+        try {
+            // Add element from stencil XML data to canvas
+            this.canvasController.addElementFromStencil(stencilData);
+            this.setStatus(`Добавлен элемент: ${stencilData.title || 'элемент'}`);
+        } catch (error) {
+            console.error('Error adding element from stencil:', error);
             alert('Ошибка при добавлении элемента: ' + error.message);
         }
     }
