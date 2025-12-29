@@ -1,0 +1,575 @@
+/**
+ * ARIS Express Clone - Main Stylesheet
+ * Structured CSS for professional business process modeling interface
+ */
+
+/* Reset and base styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 14px;
+    color: #333;
+    overflow: hidden;
+    background-color: #f0f0f0;
+}
+
+/* Application container */
+#app-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100vw;
+}
+
+/* Menu bar */
+.menu-bar {
+    display: flex;
+    background-color: #fff;
+    border-bottom: 1px solid #d0d0d0;
+    padding: 0;
+    user-select: none;
+    z-index: 1000;
+}
+
+.menu-item {
+    position: relative;
+    padding: 8px 15px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.menu-item:hover {
+    background-color: #e8e8e8;
+}
+
+.menu-item span {
+    font-size: 14px;
+}
+
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    min-width: 200px;
+    z-index: 1001;
+}
+
+.menu-item:hover .dropdown-menu {
+    display: block;
+}
+
+.dropdown-menu a {
+    display: block;
+    padding: 8px 20px;
+    color: #333;
+    text-decoration: none;
+    transition: background-color 0.2s;
+}
+
+.dropdown-menu a:hover {
+    background-color: #e8f4fd;
+}
+
+.dropdown-menu hr {
+    margin: 4px 0;
+    border: none;
+    border-top: 1px solid #e0e0e0;
+}
+
+/* Toolbar */
+.toolbar {
+    display: flex;
+    align-items: center;
+    background-color: #f8f8f8;
+    border-bottom: 1px solid #d0d0d0;
+    padding: 5px 10px;
+    gap: 5px;
+}
+
+.tool-group {
+    display: flex;
+    gap: 2px;
+}
+
+.tool-btn {
+    padding: 6px 10px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 16px;
+}
+
+.tool-btn:hover {
+    background-color: #e8f4fd;
+    border-color: #0078d4;
+}
+
+.tool-btn:active {
+    background-color: #d0e8f7;
+}
+
+.tool-separator {
+    width: 1px;
+    height: 24px;
+    background-color: #d0d0d0;
+    margin: 0 8px;
+}
+
+/* Workspace */
+.workspace {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+    background-color: #e8e8e8;
+}
+
+/* Panels */
+.panel {
+    display: flex;
+    flex-direction: column;
+    background-color: #fff;
+    border-right: 1px solid #d0d0d0;
+}
+
+.left-panel {
+    width: 250px;
+    min-width: 200px;
+    max-width: 400px;
+    resize: horizontal;
+    overflow: auto;
+}
+
+.canvas-panel {
+    flex: 1;
+    border-right: none;
+    overflow: hidden;
+}
+
+.right-panel {
+    width: 280px;
+    min-width: 200px;
+    max-width: 400px;
+    resize: horizontal;
+    overflow: auto;
+    border-right: none;
+    border-left: 1px solid #d0d0d0;
+}
+
+/* Panel tabs */
+.panel-tabs {
+    display: flex;
+    background-color: #f8f8f8;
+    border-bottom: 1px solid #d0d0d0;
+}
+
+.panel-tab {
+    flex: 1;
+    padding: 8px 12px;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 13px;
+    transition: background-color 0.2s;
+}
+
+.panel-tab:hover {
+    background-color: #e8e8e8;
+}
+
+.panel-tab.active {
+    background-color: #fff;
+    border-bottom: 2px solid #0078d4;
+    font-weight: 600;
+}
+
+/* Panel content */
+.panel-content {
+    display: none;
+    flex: 1;
+    flex-direction: column;
+    overflow: auto;
+}
+
+.panel-content.active {
+    display: flex;
+}
+
+.panel-header {
+    padding: 10px;
+    background-color: #f8f8f8;
+    border-bottom: 1px solid #e0e0e0;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+/* Model tree */
+.model-tree {
+    flex: 1;
+    padding: 10px;
+    overflow: auto;
+}
+
+/* Stencil selector */
+.stencil-selector {
+    padding: 10px;
+    background-color: #f8f8f8;
+}
+
+#notation-select {
+    width: 100%;
+    padding: 6px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    font-size: 13px;
+}
+
+/* Stencil container */
+.stencil-container {
+    flex: 1;
+    padding: 10px;
+    overflow-y: auto;
+}
+
+.stencil-item {
+    padding: 10px;
+    margin-bottom: 8px;
+    background-color: #f8f8f8;
+    border: 1px solid #e0e0e0;
+    border-radius: 3px;
+    cursor: move;
+    transition: all 0.2s;
+    text-align: center;
+}
+
+.stencil-item:hover {
+    background-color: #e8f4fd;
+    border-color: #0078d4;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.stencil-item .stencil-icon {
+    display: block;
+    width: 100%;
+    height: 60px;
+    margin-bottom: 5px;
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
+}
+
+.stencil-item .stencil-label {
+    font-size: 12px;
+    color: #555;
+}
+
+/* Canvas */
+.canvas-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 15px;
+    background-color: #f8f8f8;
+    border-bottom: 1px solid #d0d0d0;
+}
+
+.canvas-title {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.canvas-info {
+    display: flex;
+    gap: 15px;
+    font-size: 13px;
+    color: #666;
+}
+
+.diagram-canvas {
+    flex: 1;
+    position: relative;
+    background-color: #fff;
+    background-image:
+        linear-gradient(rgba(200, 200, 200, 0.3) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(200, 200, 200, 0.3) 1px, transparent 1px);
+    background-size: 20px 20px;
+    overflow: auto;
+}
+
+#drawio-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+/* Properties panel */
+.properties-container {
+    flex: 1;
+    padding: 10px;
+    overflow-y: auto;
+}
+
+.property-section {
+    margin-bottom: 15px;
+}
+
+.property-section h3 {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+#object-properties .no-selection {
+    color: #999;
+    font-style: italic;
+    font-size: 13px;
+}
+
+.property-row {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 10px;
+}
+
+.property-label {
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: #555;
+}
+
+.property-input {
+    padding: 6px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    font-size: 13px;
+}
+
+.property-input:focus {
+    outline: none;
+    border-color: #0078d4;
+}
+
+/* Status bar */
+.status-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #f8f8f8;
+    border-top: 1px solid #d0d0d0;
+    padding: 4px 10px;
+    font-size: 12px;
+    color: #666;
+}
+
+.status-item {
+    padding: 0 10px;
+}
+
+/* Modal dialogs */
+#modal-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: none;
+    z-index: 2000;
+    align-items: center;
+    justify-content: center;
+}
+
+#modal-container.active {
+    display: flex;
+}
+
+.modal {
+    background-color: #fff;
+    border-radius: 6px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    min-width: 400px;
+    max-width: 800px;
+    max-height: 80vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-header {
+    padding: 15px 20px;
+    background-color: #f8f8f8;
+    border-bottom: 1px solid #d0d0d0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-title {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
+}
+
+.modal-close:hover {
+    color: #000;
+}
+
+.modal-body {
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.modal-footer {
+    padding: 15px 20px;
+    background-color: #f8f8f8;
+    border-top: 1px solid #d0d0d0;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.btn {
+    padding: 8px 16px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    background-color: #fff;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.btn:hover {
+    background-color: #f0f0f0;
+}
+
+.btn-primary {
+    background-color: #0078d4;
+    color: #fff;
+    border-color: #0078d4;
+}
+
+.btn-primary:hover {
+    background-color: #006abc;
+}
+
+/* Responsive design */
+@media (max-width: 1024px) {
+    .left-panel {
+        width: 200px;
+    }
+
+    .right-panel {
+        width: 220px;
+    }
+}
+
+@media (max-width: 768px) {
+    .workspace {
+        flex-direction: column;
+    }
+
+    .left-panel,
+    .right-panel {
+        width: 100%;
+        max-height: 200px;
+    }
+
+    .menu-bar {
+        flex-wrap: wrap;
+    }
+
+    .toolbar {
+        overflow-x: auto;
+    }
+}
+
+/* Help content styles */
+.help-content {
+    line-height: 1.6;
+}
+
+.help-content h1 {
+    font-size: 24px;
+    margin-bottom: 15px;
+    color: #0078d4;
+}
+
+.help-content h2 {
+    font-size: 20px;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.help-content h3 {
+    font-size: 16px;
+    margin-top: 15px;
+    margin-bottom: 8px;
+    color: #555;
+}
+
+.help-content p {
+    margin-bottom: 10px;
+}
+
+.help-content ul, .help-content ol {
+    margin-left: 25px;
+    margin-bottom: 10px;
+}
+
+.help-content code {
+    background-color: #f5f5f5;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+}
+
+.help-content pre {
+    background-color: #f5f5f5;
+    padding: 10px;
+    border-radius: 3px;
+    overflow-x: auto;
+    margin-bottom: 10px;
+}
+
+/* VAD specific styles */
+.vad-shape-base {
+    fill: #B9E0A5;
+}
+
+.vad-shape-detail {
+    fill: #B9E0A6;
+}
+
+.vad-shape-external {
+    fill: #D4E1F5;
+}
+
+.vad-role-text {
+    fill: #1A1A1A;
+}
+
+.vad-comment-text {
+    fill: #FF6666;
+}
