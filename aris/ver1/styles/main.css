@@ -573,3 +573,97 @@ body {
 .vad-comment-text {
     fill: #FF6666;
 }
+
+/* Model Tree Styles */
+.model-tree-section {
+    margin: 10px 0;
+}
+
+.tree-header {
+    font-weight: bold;
+    padding: 8px 12px;
+    background-color: #e8e8e8;
+    border-bottom: 1px solid #ccc;
+}
+
+.tree-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.tree-item {
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.tree-item:hover {
+    background-color: #e8f4fd;
+}
+
+.tree-icon {
+    font-size: 16px;
+}
+
+.tree-label {
+    font-size: 13px;
+    flex: 1;
+}
+
+/* Stencil Grid Styles */
+.stencil-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 10px;
+    padding: 10px;
+}
+
+.stencil-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: move;
+    background-color: #fff;
+    transition: all 0.2s;
+}
+
+.stencil-item:hover {
+    border-color: #4a90e2;
+    background-color: #f0f8ff;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.stencil-preview {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 5px;
+}
+
+.stencil-label {
+    font-size: 11px;
+    text-align: center;
+    word-wrap: break-word;
+    width: 100%;
+}
+
+.stencil-selector {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+.stencil-selector select {
+    width: 100%;
+    padding: 6px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    font-size: 13px;
+}

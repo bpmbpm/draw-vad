@@ -1,0 +1,74 @@
+<mxfile host="draw.io" modified="2025-12-29T19:00:00.000Z" agent="ARIS Express Clone" version="1.0" type="device">
+  <diagram id="vad_example_1" name="VAD Пример 1 - Цепочка создания ценности">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Заголовок процесса -->
+        <mxCell id="process_title" value="Процесс управления заказами" style="shape=partialRectangle;html=1;right=0;top=0;bottom=0;fillColor=none;strokeColor=#000000;align=left;verticalAlign=middle;spacingLeft=4;fontSize=14;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="40" y="40" width="300" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- Функция 1: Прием заказа -->
+        <mxCell id="func1" value="Прием заказа" style="html=1;shadow=0;dashed=0;align=center;verticalAlign=middle;shape=mxgraph.arrows2.arrow;dy=0;dx=10;notch=0;whiteSpace=wrap;fillColor=#B9E0A6;strokeColor=#82B366;" parent="1" vertex="1">
+          <mxGeometry x="40" y="120" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="func1_role" value="Менеджер по продажам" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;whiteSpace=wrap;fontColor=#1A1A1A;fontSize=10;" parent="func1" vertex="1">
+          <mxGeometry y="1" width="120" height="16" relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Функция 2: Проверка наличия -->
+        <mxCell id="func2" value="Проверка наличия товара" style="html=1;shadow=0;dashed=0;align=center;verticalAlign=middle;shape=mxgraph.arrows2.arrow;dy=0;dx=10;notch=0;whiteSpace=wrap;fillColor=#B9E0A6;strokeColor=#82B366;" parent="1" vertex="1">
+          <mxGeometry x="200" y="120" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="func2_role" value="Кладовщик" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;whiteSpace=wrap;fontColor=#1A1A1A;fontSize=10;" parent="func2" vertex="1">
+          <mxGeometry y="1" width="120" height="16" relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Функция 3: Комплектация -->
+        <mxCell id="func3" value="Комплектация заказа" style="html=1;shadow=0;dashed=0;align=center;verticalAlign=middle;shape=mxgraph.arrows2.arrow;dy=0;dx=10;notch=0;whiteSpace=wrap;fillColor=#D4E1F5;strokeColor=#6C8EBF;" parent="1" vertex="1">
+          <mxGeometry x="360" y="120" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="func3_role" value="Работник склада" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;whiteSpace=wrap;fontColor=#1A1A1A;fontSize=10;" parent="func3" vertex="1">
+          <mxGeometry y="1" width="120" height="16" relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Функция 4: Отгрузка -->
+        <mxCell id="func4" value="Отгрузка товара" style="html=1;shadow=0;dashed=0;align=center;verticalAlign=middle;shape=mxgraph.arrows2.arrow;dy=0;dx=10;notch=0;whiteSpace=wrap;fillColor=#D4E1F5;strokeColor=#6C8EBF;" parent="1" vertex="1">
+          <mxGeometry x="520" y="120" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="func4_role" value="Логист" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=top;whiteSpace=wrap;fontColor=#1A1A1A;fontSize=10;" parent="func4" vertex="1">
+          <mxGeometry y="1" width="120" height="16" relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Связи между функциями -->
+        <mxCell id="flow1" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="func1" target="func2" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="160" y="150" as="sourcePoint" />
+            <mxPoint x="200" y="150" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="flow2" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="func2" target="func3" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="320" y="150" as="sourcePoint" />
+            <mxPoint x="360" y="150" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="flow3" value="" style="endArrow=classic;html=1;rounded=0;strokeWidth=2;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="func3" target="func4" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="480" y="150" as="sourcePoint" />
+            <mxPoint x="520" y="150" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Примечание -->
+        <mxCell id="note1" value="Примечание: Процесс обработки заказа от получения до отгрузки.&#xa;Цветом выделены различные уровни детализации процессов.&#xa;Зеленый - базовые процессы, синий - детализированные." style="shape=note;size=20;whiteSpace=wrap;html=1;align=left;verticalAlign=top;fillColor=#FFF4C3;strokeColor=#D6B656;spacingLeft=4;spacingTop=4;" parent="1" vertex="1">
+          <mxGeometry x="40" y="240" width="600" height="100" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
