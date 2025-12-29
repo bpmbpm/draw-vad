@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARIS Express Clone - Value Added Diagram Editor</title>
+
+    <!-- External libraries via CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.15/themes/default/style.min.css" />
+    <link rel="stylesheet" href="styles/main.css">
+
+    <!-- Draw.io integration -->
+    <script src="https://www.draw.io/js/viewer.min.js"></script>
+</head>
+<body>
+    <!-- Main application container -->
+    <div id="app-container">
+        <!-- Menu bar -->
+        <div id="menu-bar" class="menu-bar">
+            <div class="menu-item" data-menu="file">
+                <span>Файл</span>
+                <div class="dropdown-menu" id="file-menu">
+                    <a href="#" data-action="new">Создать</a>
+                    <a href="#" data-action="open">Открыть...</a>
+                    <a href="#" data-action="save">Сохранить</a>
+                    <a href="#" data-action="saveas">Сохранить как...</a>
+                    <hr>
+                    <a href="#" data-action="import">Импорт...</a>
+                    <a href="#" data-action="export">Экспорт...</a>
+                    <hr>
+                    <a href="#" data-action="print">Печать...</a>
+                    <hr>
+                    <a href="#" data-action="exit">Выход</a>
+                </div>
+            </div>
+
+            <div class="menu-item" data-menu="edit">
+                <span>Правка</span>
+                <div class="dropdown-menu" id="edit-menu">
+                    <a href="#" data-action="undo">Отменить</a>
+                    <a href="#" data-action="redo">Повторить</a>
+                    <hr>
+                    <a href="#" data-action="cut">Вырезать</a>
+                    <a href="#" data-action="copy">Копировать</a>
+                    <a href="#" data-action="paste">Вставить</a>
+                    <a href="#" data-action="delete">Удалить</a>
+                    <hr>
+                    <a href="#" data-action="selectall">Выделить все</a>
+                </div>
+            </div>
+
+            <div class="menu-item" data-menu="view">
+                <span>Вид</span>
+                <div class="dropdown-menu" id="view-menu">
+                    <a href="#" data-action="zoom-in">Увеличить</a>
+                    <a href="#" data-action="zoom-out">Уменьшить</a>
+                    <a href="#" data-action="zoom-fit">По размеру страницы</a>
+                    <a href="#" data-action="zoom-100">100%</a>
+                    <hr>
+                    <a href="#" data-action="grid">Сетка</a>
+                    <a href="#" data-action="snap">Привязка к сетке</a>
+                    <hr>
+                    <a href="#" data-action="panels">Панели инструментов...</a>
+                </div>
+            </div>
+
+            <div class="menu-item" data-menu="model">
+                <span>Модель</span>
+                <div class="dropdown-menu" id="model-menu">
+                    <a href="#" data-action="new-vad">Новая VAD диаграмма</a>
+                    <a href="#" data-action="new-epc">Новая EPC диаграмма</a>
+                    <a href="#" data-action="new-org">Новая организационная диаграмма</a>
+                    <hr>
+                    <a href="#" data-action="properties">Свойства модели...</a>
+                    <a href="#" data-action="validate">Проверить модель</a>
+                </div>
+            </div>
+
+            <div class="menu-item" data-menu="format">
+                <span>Формат</span>
+                <div class="dropdown-menu" id="format-menu">
+                    <a href="#" data-action="format-shape">Формат фигуры...</a>
+                    <a href="#" data-action="format-line">Формат линии...</a>
+                    <a href="#" data-action="format-text">Формат текста...</a>
+                    <hr>
+                    <a href="#" data-action="align">Выравнивание</a>
+                    <a href="#" data-action="distribute">Распределение</a>
+                    <hr>
+                    <a href="#" data-action="bring-front">На передний план</a>
+                    <a href="#" data-action="send-back">На задний план</a>
+                </div>
+            </div>
+
+            <div class="menu-item" data-menu="tools">
+                <span>Инструменты</span>
+                <div class="dropdown-menu" id="tools-menu">
+                    <a href="#" data-action="settings">Настройки...</a>
+                    <a href="#" data-action="configure">Конфигурация...</a>
+                </div>
+            </div>
+
+            <div class="menu-item" data-menu="help">
+                <span>Справка</span>
+                <div class="dropdown-menu" id="help-menu">
+                    <a href="#" data-action="help-contents">Содержание справки</a>
+                    <a href="#" data-action="help-vad">Справка по VAD</a>
+                    <a href="#" data-action="help-epc">Справка по EPC</a>
+                    <a href="#" data-action="help-org">Справка по орг. схемам</a>
+                    <hr>
+                    <a href="#" data-action="about">О программе</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toolbar -->
+        <div id="toolbar" class="toolbar">
+            <div class="tool-group">
+                <button class="tool-btn" data-action="new" title="Создать">
+                    <span>📄</span>
+                </button>
+                <button class="tool-btn" data-action="open" title="Открыть">
+                    <span>📂</span>
+                </button>
+                <button class="tool-btn" data-action="save" title="Сохранить">
+                    <span>💾</span>
+                </button>
+            </div>
+
+            <div class="tool-separator"></div>
+
+            <div class="tool-group">
+                <button class="tool-btn" data-action="undo" title="Отменить">
+                    <span>↶</span>
+                </button>
+                <button class="tool-btn" data-action="redo" title="Повторить">
+                    <span>↷</span>
+                </button>
+            </div>
+
+            <div class="tool-separator"></div>
+
+            <div class="tool-group">
+                <button class="tool-btn" data-action="zoom-in" title="Увеличить">
+                    <span>🔍+</span>
+                </button>
+                <button class="tool-btn" data-action="zoom-out" title="Уменьшить">
+                    <span>🔍-</span>
+                </button>
+                <button class="tool-btn" data-action="zoom-fit" title="По размеру">
+                    <span>⊡</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Main workspace -->
+        <div id="workspace" class="workspace">
+            <!-- Left panel: Model explorer and stencils -->
+            <div id="left-panel" class="panel left-panel">
+                <div class="panel-tabs">
+                    <button class="panel-tab active" data-panel="explorer">Проводник</button>
+                    <button class="panel-tab" data-panel="stencils">Трафареты</button>
+                </div>
+
+                <div id="explorer-panel" class="panel-content active">
+                    <div class="panel-header">Проводник моделей</div>
+                    <div id="model-tree" class="model-tree">
+                        <!-- Model tree will be rendered here -->
+                    </div>
+                </div>
+
+                <div id="stencils-panel" class="panel-content">
+                    <div class="panel-header">Трафареты</div>
+                    <div id="stencil-selector" class="stencil-selector">
+                        <select id="notation-select">
+                            <option value="vad">VAD - Value Added Diagram</option>
+                            <option value="epc">EPC - Event-driven Process Chain</option>
+                            <option value="org">Организационная структура</option>
+                            <option value="bpmn">BPMN</option>
+                        </select>
+                    </div>
+                    <div id="stencil-container" class="stencil-container">
+                        <!-- Stencils will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Center panel: Canvas -->
+            <div id="canvas-panel" class="panel canvas-panel">
+                <div class="canvas-header">
+                    <div class="canvas-title">Новая диаграмма</div>
+                    <div class="canvas-info">
+                        <span id="zoom-level">100%</span>
+                    </div>
+                </div>
+                <div id="diagram-canvas" class="diagram-canvas">
+                    <!-- Draw.io canvas will be embedded here -->
+                    <div id="drawio-container"></div>
+                </div>
+            </div>
+
+            <!-- Right panel: Properties -->
+            <div id="right-panel" class="panel right-panel">
+                <div class="panel-header">Свойства</div>
+                <div id="properties-container" class="properties-container">
+                    <div class="property-section">
+                        <h3>Свойства объекта</h3>
+                        <div id="object-properties">
+                            <p class="no-selection">Объект не выбран</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status bar -->
+        <div id="status-bar" class="status-bar">
+            <div class="status-item">
+                <span id="status-message">Готов</span>
+            </div>
+            <div class="status-item">
+                <span id="cursor-position">X: 0, Y: 0</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal dialogs -->
+    <div id="modal-container"></div>
+
+    <!-- Configuration file -->
+    <script src="config/app-config.js"></script>
+
+    <!-- Domain Layer (DDD) -->
+    <script src="js/domain/entities/Diagram.js"></script>
+    <script src="js/domain/entities/DiagramElement.js"></script>
+    <script src="js/domain/entities/Model.js"></script>
+    <script src="js/domain/value-objects/Point.js"></script>
+    <script src="js/domain/value-objects/Size.js"></script>
+    <script src="js/domain/value-objects/Style.js"></script>
+    <script src="js/domain/repositories/IDiagramRepository.js"></script>
+    <script src="js/domain/repositories/IModelRepository.js"></script>
+
+    <!-- Application Layer -->
+    <script src="js/application/services/DiagramService.js"></script>
+    <script src="js/application/services/ModelService.js"></script>
+    <script src="js/application/services/NotationService.js"></script>
+    <script src="js/application/use-cases/CreateDiagram.js"></script>
+    <script src="js/application/use-cases/SaveDiagram.js"></script>
+    <script src="js/application/use-cases/LoadDiagram.js"></script>
+
+    <!-- Infrastructure Layer -->
+    <script src="js/infrastructure/repositories/DrawioRepository.js"></script>
+    <script src="js/infrastructure/persistence/LocalStorageAdapter.js"></script>
+    <script src="js/infrastructure/parsers/DrawioXmlParser.js"></script>
+
+    <!-- Presentation Layer -->
+    <script src="js/presentation/ui/MenuController.js"></script>
+    <script src="js/presentation/ui/ToolbarController.js"></script>
+    <script src="js/presentation/ui/CanvasController.js"></script>
+    <script src="js/presentation/ui/PropertiesController.js"></script>
+    <script src="js/presentation/ui/StencilController.js"></script>
+    <script src="js/presentation/ui/HelpController.js"></script>
+
+    <!-- Main application bootstrap -->
+    <script src="js/app.js"></script>
+
+    <!-- jQuery and jstree for tree view -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.3.15/jstree.min.js"></script>
+</body>
+</html>
