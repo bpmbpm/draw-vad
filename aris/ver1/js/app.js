@@ -93,6 +93,10 @@ class ArisExpressApp {
             const xml = await response.text();
             this.currentDiagram = this.diagramService.importFromDrawio(xml);
             this.canvasController.setDiagram(this.currentDiagram);
+
+            // Also set raw XML for direct rendering
+            this.canvasController.setRawXml(xml);
+
             this.setStatus(`Загружен пример: ${this.currentDiagram.name || filePath}`);
         } catch (error) {
             console.error('Error loading example:', error);
@@ -436,6 +440,15 @@ ${AppConfig.app.name}
 ${AppConfig.app.description}
 
 Автор: ${AppConfig.app.author}
+
+Последнее обновление:
+  Issue #9: Реализация ARIS-совместимых нотаций с трафаретами и примерами
+  - Исправлена загрузка трафаретов (stencils)
+  - Добавлено SVG-рендеринг диаграмм на холсте
+  - Добавлены примеры VAD, EPC, BPMN, Org диаграмм
+  - Документация по тестированию в папке case/
+
+GitHub: https://github.com/bpmbpm/draw-vad
         `;
         alert(about);
     }

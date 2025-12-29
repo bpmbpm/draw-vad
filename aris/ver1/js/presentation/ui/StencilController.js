@@ -66,17 +66,17 @@ class StencilController {
 
             const stencilData = await response.text();
 
-            // Parse stencil library (mxlibrary format is JSON)
+            // Parse stencil library (mxlibrary format is JSON wrapped in XML tags)
             let stencils;
             try {
                 stencils = JSON.parse(stencilData);
             } catch (e) {
-                // If it's wrapped in <mxlibrary> tags, extract the JSON
-                const match = stencilData.match(/<mxlibrary>(.*)<\/mxlibrary>/);
+                // If it's wrapped in <mxlibrary> tags, extract the JSON (use [\s\S]* for multiline matching)
+                const match = stencilData.match(/<mxlibrary>([\s\S]*)<\/mxlibrary>/);
                 if (match) {
                     stencils = JSON.parse(match[1]);
                 } else {
-                    stencils = JSON.parse(stencilData);
+                    throw new Error('Invalid stencil format: not valid JSON and no <mxlibrary> tags found');
                 }
             }
 
