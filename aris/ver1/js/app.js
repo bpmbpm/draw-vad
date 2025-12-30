@@ -49,8 +49,22 @@ class ArisExpressApp {
         // Initialize tab container reference
         this.tabContainer = document.getElementById('diagram-tabs');
 
+        // Initialize issue number indicator in UI
+        this.initIssueIndicator();
+
         // Load welcome message or last diagram
         this.showWelcome();
+    }
+
+    /**
+     * Initialize the issue number indicator in the top right corner of the toolbar
+     */
+    initIssueIndicator() {
+        const issueDisplay = document.getElementById('issue-number-display');
+        if (issueDisplay && AppConfig.app.lastUpdate) {
+            const update = AppConfig.app.lastUpdate;
+            issueDisplay.innerHTML = `<a href="https://github.com/bpmbpm/draw-vad/issues/${update.issueNumber}" target="_blank">Issue #${update.issueNumber}</a>`;
+        }
     }
 
     // ========== Tab Management ==========
@@ -517,6 +531,9 @@ class ArisExpressApp {
                 this.currentDiagram.name = name;
             }
 
+            // Add title shape element at the top of the diagram
+            this.addTitleShapeToDiagram(this.currentDiagram);
+
             this.canvasController.setDiagram(this.currentDiagram);
 
             // Auto-select the matching stencil
@@ -539,6 +556,32 @@ class ArisExpressApp {
             console.error('Error creating diagram:', error);
             alert('Ошибка при создании диаграммы: ' + error.message);
         }
+    }
+
+    /**
+     * Add a title shape element to a diagram using the special partialRectangle style
+     */
+    addTitleShapeToDiagram(diagram) {
+        const titleElement = {
+            id: 'title_' + Date.now(),
+            name: diagram.name || 'Название схемы',
+            type: 'diagramTitle',
+            shapeType: 'partialRect',
+            position: { x: 40, y: 20 },
+            size: { width: 300, height: 30 },
+            style: {
+                fillColor: 'none',
+                strokeColor: '#000000',
+                fontStyle: 'bold',
+                fontSize: '14'
+            },
+            isDiagramTitle: true
+        };
+
+        if (!diagram.elements) {
+            diagram.elements = [];
+        }
+        diagram.elements.unshift(titleElement); // Add at beginning
     }
 
     async saveDiagram() {
@@ -941,9 +984,12 @@ class ArisExpressApp {
                             </p>
                         </div>
                     </div>
-                    <div style="padding: 15px 20px; background: #f8f8f8; border-top: 1px solid #ddd; text-align: right;">
-                        <button class="btn btn-secondary" onclick="app.closeModal()">Отмена</button>
-                        <button class="btn btn-primary" style="margin-left: 10px;" onclick="app.saveMetaModel()">Сохранить изменения</button>
+                    <div style="padding: 15px 20px; background: #f8f8f8; border-top: 1px solid #ddd; display: flex; justify-content: space-between; align-items: center;">
+                        <button class="btn btn-secondary" onclick="app.exportMetaModelToMarkdown()" style="background-color: #28a745; color: white; border-color: #28a745;">Экспорт в Markdown</button>
+                        <div>
+                            <button class="btn btn-secondary" onclick="app.closeModal()">Закрыть</button>
+                            <button class="btn btn-primary" style="margin-left: 10px;" onclick="app.saveMetaModel()">Сохранить изменения</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1019,6 +1065,76 @@ class ArisExpressApp {
     saveMetaModel() {
         alert('Сохранение метамодели пока не реализовано.\nИзменения необходимо вносить вручную в файлы stencils/*.xml.');
         this.closeModal();
+    }
+
+    /**
+     * Export metamodel data to Markdown table format
+     */
+    async exportMetaModelToMarkdown() {
+        const notation = document.getElementById('meta-notation-select')?.value || 'vad';
+
+        try {
+            const response = await fetch(`stencils/${notation}.xml`);
+            const stencilData = await response.text();
+
+            let stencils;
+            const match = stencilData.match(/<mxlibrary>([\s\S]*)<\/mxlibrary>/);
+            if (match) {
+                stencils = JSON.parse(match[1]);
+            } else {
+                stencils = JSON.parse(stencilData);
+            }
+
+            // Separate shapes and connections
+            const shapes = [];
+            const connections = [];
+            stencils.forEach((stencil, index) => {
+                const isConnection = stencil.xml && (stencil.xml.includes('edge="1"') || stencil.xml.includes('endArrow='));
+                if (isConnection) {
+                    connections.push({ ...stencil, index });
+                } else {
+                    shapes.push({ ...stencil, index });
+                }
+            });
+
+            // Generate Markdown content
+            let markdown = `# Метамодель ${notation.toUpperCase()}\n\n`;
+            markdown += `*Экспорт: ${new Date().toLocaleString('ru-RU')}*\n\n`;
+
+            // Shapes table
+            markdown += `## Фигуры (Shapes)\n\n`;
+            markdown += `| № | Название | Ширина | Высота | Описание |\n`;
+            markdown += `|---|----------|--------|--------|----------|\n`;
+            shapes.forEach((s, i) => {
+                const title = s.title || 'Без названия';
+                markdown += `| ${i + 1} | ${title} | ${s.w || '-'} | ${s.h || '-'} | ${s.aspect || 'fixed'} |\n`;
+            });
+
+            // Connections table
+            markdown += `\n## Связи (Connections)\n\n`;
+            markdown += `| № | Название | Ширина | Высота |\n`;
+            markdown += `|---|----------|--------|--------|\n`;
+            connections.forEach((c, i) => {
+                const title = c.title || 'Без названия';
+                markdown += `| ${i + 1} | ${title} | ${c.w || '-'} | ${c.h || '-'} |\n`;
+            });
+
+            // Download as file
+            const blob = new Blob([markdown], { type: 'text/markdown;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `metamodel_${notation}_${new Date().toISOString().split('T')[0]}.md`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            this.setStatus(`Метамодель ${notation.toUpperCase()} экспортирована в Markdown`);
+        } catch (error) {
+            console.error('Error exporting metamodel to Markdown:', error);
+            alert('Ошибка при экспорте метамодели: ' + error.message);
+        }
     }
 
     // ========== Format Operations ==========
