@@ -9,9 +9,15 @@ const AppConfig = {
     // Application metadata
     app: {
         name: 'ARIS Express Clone',
-        version: '1.0.0',
+        version: '1.1.0',
         author: 'draw-vad',
-        description: 'Business process modeling tool supporting VAD, EPC, and organizational diagrams'
+        description: 'Business process modeling tool supporting VAD, EPC, and organizational diagrams',
+        lastUpdate: {
+            issueNumber: 13,
+            issueTitle: 'Aris1c',
+            prNumber: 14,
+            prTitle: 'ARIS-like UI features with editable shapes and connections'
+        }
     },
 
     // UI settings

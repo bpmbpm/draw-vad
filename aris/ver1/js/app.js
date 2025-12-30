@@ -50,7 +50,142 @@ class ArisExpressApp {
         const modelTree = document.getElementById('model-tree');
         if (!modelTree) return;
 
-        const examples = [
+        // Hierarchical structure for examples
+        const examplesTree = {
+            name: 'Примеры',
+            icon: '📁',
+            expanded: true,
+            children: [
+                {
+                    name: 'VAD',
+                    icon: '📊',
+                    expanded: false,
+                    children: [
+                        { name: 'Управление заказами', file: 'examples/vad_example_1.drawio', type: 'vad', icon: '📄' },
+                        { name: 'Производственный цикл', file: 'examples/vad_example_2.drawio', type: 'vad', icon: '📄' }
+                    ]
+                },
+                {
+                    name: 'EPC',
+                    icon: '🔄',
+                    expanded: false,
+                    children: [
+                        { name: 'Обработка заявки', file: 'examples/epc_example_1.drawio', type: 'epc', icon: '📄' },
+                        { name: 'Обработка заказа', file: 'examples/epc_example_2.drawio', type: 'epc', icon: '📄' }
+                    ]
+                },
+                {
+                    name: 'BPMN',
+                    icon: '📋',
+                    expanded: false,
+                    children: [
+                        { name: 'Простой процесс', file: 'examples/bpmn_example_1.drawio', type: 'bpmn', icon: '📄' },
+                        { name: 'Процесс с пулами', file: 'examples/bpmn_example_2.drawio', type: 'bpmn', icon: '📄' }
+                    ]
+                },
+                {
+                    name: 'ORG',
+                    icon: '👥',
+                    expanded: false,
+                    children: [
+                        { name: 'Структура компании', file: 'examples/org_example_1.drawio', type: 'org', icon: '📄' },
+                        { name: 'IT Отдел', file: 'examples/org_example_2.drawio', type: 'org', icon: '📄' }
+                    ]
+                }
+            ]
+        };
+
+        // User diagrams section (for newly created diagrams)
+        this.userDiagrams = [];
+
+        // Build the tree HTML
+        const buildTreeHtml = (node, level = 0) => {
+            const indent = level * 15;
+            let html = '';
+
+            if (node.children) {
+                // Folder node
+                const expandIcon = node.expanded ? '▼' : '▶';
+                html += `
+                    <div class="tree-folder ${node.expanded ? 'expanded' : ''}"
+                         data-folder="${node.name}"
+                         style="padding-left: ${indent}px;">
+                        <span class="tree-expand">${expandIcon}</span>
+                        <span class="tree-icon">${node.icon || '📁'}</span>
+                        <span class="tree-label">${node.name}</span>
+                    </div>
+                    <div class="tree-children" style="display: ${node.expanded ? 'block' : 'none'};">
+                `;
+                node.children.forEach(child => {
+                    html += buildTreeHtml(child, level + 1);
+                });
+                html += '</div>';
+            } else if (node.file) {
+                // File node
+                html += `
+                    <div class="tree-item"
+                         data-file="${node.file}"
+                         data-type="${node.type}"
+                         style="padding-left: ${indent}px;">
+                        <span class="tree-icon">${node.icon || '📄'}</span>
+                        <span class="tree-label">${node.name}</span>
+                    </div>
+                `;
+            }
+
+            return html;
+        };
+
+        // Build user diagrams section
+        const userDiagramsHtml = `
+            <div class="model-tree-section">
+                <div class="tree-folder expanded" data-folder="user-diagrams">
+                    <span class="tree-expand">▼</span>
+                    <span class="tree-icon">📂</span>
+                    <span class="tree-label">Мои диаграммы</span>
+                </div>
+                <div class="tree-children" id="user-diagrams-container">
+                    <div class="tree-empty" style="padding: 8px 15px; color: #999; font-size: 12px; font-style: italic;">
+                        Нет созданных диаграмм
+                    </div>
+                </div>
+            </div>
+        `;
+
+        modelTree.innerHTML = userDiagramsHtml + '<div class="model-tree-section">' + buildTreeHtml(examplesTree) + '</div>';
+
+        // Attach folder toggle handlers
+        modelTree.querySelectorAll('.tree-folder').forEach(folder => {
+            folder.addEventListener('click', (e) => {
+                const children = folder.nextElementSibling;
+                const expandIcon = folder.querySelector('.tree-expand');
+                if (children && children.classList.contains('tree-children')) {
+                    const isExpanded = children.style.display !== 'none';
+                    children.style.display = isExpanded ? 'none' : 'block';
+                    expandIcon.textContent = isExpanded ? '▶' : '▼';
+                    folder.classList.toggle('expanded', !isExpanded);
+                }
+            });
+        });
+
+        // Attach file click handlers
+        modelTree.querySelectorAll('.tree-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const file = item.getAttribute('data-file');
+                const type = item.getAttribute('data-type');
+                if (file) {
+                    this.loadExampleDiagram(file, type);
+
+                    // Highlight selected item
+                    modelTree.querySelectorAll('.tree-item').forEach(i => i.classList.remove('selected'));
+                    item.classList.add('selected');
+                }
+            });
+        });
+
+        // Store examples list for compatibility
+        this.examplesList = [
             { name: 'VAD Пример 1 - Управление заказами', file: 'examples/vad_example_1.drawio', type: 'vad' },
             { name: 'VAD Пример 2 - Производственный цикл', file: 'examples/vad_example_2.drawio', type: 'vad' },
             { name: 'EPC Пример 1 - Обработка заявки', file: 'examples/epc_example_1.drawio', type: 'epc' },
@@ -60,29 +195,48 @@ class ArisExpressApp {
             { name: 'Org Пример 1 - Структура компании', file: 'examples/org_example_1.drawio', type: 'org' },
             { name: 'Org Пример 2 - IT Отдел', file: 'examples/org_example_2.drawio', type: 'org' }
         ];
+    }
 
-        let html = '<div class="model-tree-section"><div class="tree-header">Примеры</div><ul class="tree-list">';
-        examples.forEach((example, index) => {
-            html += `<li class="tree-item" data-example-index="${index}" data-example-file="${example.file}">
-                <span class="tree-icon">📄</span>
-                <span class="tree-label">${example.name}</span>
-            </li>`;
-        });
-        html += '</ul></div>';
+    addDiagramToExplorer(diagram) {
+        const container = document.getElementById('user-diagrams-container');
+        if (!container) return;
 
-        modelTree.innerHTML = html;
+        // Remove "no diagrams" message if present
+        const emptyMsg = container.querySelector('.tree-empty');
+        if (emptyMsg) {
+            emptyMsg.remove();
+        }
 
-        // Attach click handlers
-        modelTree.querySelectorAll('.tree-item').forEach(item => {
-            item.addEventListener('click', () => {
-                const file = item.getAttribute('data-example-file');
-                const index = parseInt(item.getAttribute('data-example-index'));
-                const example = examples[index];
-                this.loadExampleDiagram(file, example ? example.type : null);
+        // Check if diagram already exists
+        const existing = container.querySelector(`[data-diagram-id="${diagram.id}"]`);
+        if (existing) {
+            existing.querySelector('.tree-label').textContent = diagram.name;
+            return;
+        }
+
+        // Add new diagram to tree
+        const itemHtml = `
+            <div class="tree-item" data-diagram-id="${diagram.id}" data-type="${diagram.type}">
+                <span class="tree-icon">${this.getNotationIcon(diagram.type)}</span>
+                <span class="tree-label">${diagram.name}</span>
+            </div>
+        `;
+
+        container.insertAdjacentHTML('beforeend', itemHtml);
+
+        // Attach click handler
+        const newItem = container.querySelector(`[data-diagram-id="${diagram.id}"]`);
+        if (newItem) {
+            newItem.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.canvasController.setDiagram(diagram);
+                this.currentDiagram = diagram;
+
+                // Highlight selected
+                document.querySelectorAll('.tree-item').forEach(i => i.classList.remove('selected'));
+                newItem.classList.add('selected');
             });
-        });
-
-        this.examplesList = examples;
+        }
     }
 
     async loadExampleDiagram(filePath, diagramType = null) {
@@ -207,6 +361,14 @@ class ArisExpressApp {
             // Auto-select the matching stencil
             this.setNotationStencil(type);
 
+            // Add to model explorer
+            this.addDiagramToExplorer(this.currentDiagram);
+
+            // Update model properties
+            if (this.propertiesController) {
+                this.propertiesController.showModelProperties(this.currentDiagram);
+            }
+
             this.setStatus(`Создана новая ${type.toUpperCase()} диаграмма: ${this.currentDiagram.name}`);
             console.log('Created diagram:', this.currentDiagram);
         } catch (error) {
@@ -222,9 +384,49 @@ class ArisExpressApp {
         }
 
         try {
-            await this.saveDiagramUseCase.execute(this.currentDiagram);
-            this.setStatus(`Диаграмма "${this.currentDiagram.name}" сохранена`);
-            console.log('Diagram saved:', this.currentDiagram);
+            // Use Save As dialog to let user choose location
+            const xml = this.diagramService.exportToDrawio(this.currentDiagram);
+            const blob = new Blob([xml], { type: 'application/xml' });
+
+            // Use the File System Access API if available, otherwise fallback to download
+            if ('showSaveFilePicker' in window) {
+                try {
+                    const handle = await window.showSaveFilePicker({
+                        suggestedName: `${this.currentDiagram.name || 'diagram'}.drawio`,
+                        types: [{
+                            description: 'Draw.io Diagram',
+                            accept: { 'application/xml': ['.drawio', '.xml'] }
+                        }]
+                    });
+                    const writable = await handle.createWritable();
+                    await writable.write(blob);
+                    await writable.close();
+
+                    this.currentFilename = handle.name;
+                    this.setStatus(`Диаграмма сохранена: ${handle.name}`);
+
+                    // Update model properties with filename
+                    if (this.propertiesController) {
+                        this.propertiesController.showModelProperties(this.currentDiagram, handle.name);
+                    }
+                } catch (err) {
+                    if (err.name !== 'AbortError') {
+                        throw err;
+                    }
+                }
+            } else {
+                // Fallback: download file
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${this.currentDiagram.name || 'diagram'}.drawio`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+                this.setStatus(`Диаграмма "${this.currentDiagram.name}" сохранена (загружена)`);
+            }
         } catch (error) {
             console.error('Error saving diagram:', error);
             alert('Ошибка при сохранении: ' + error.message);
@@ -416,23 +618,33 @@ class ArisExpressApp {
     }
 
     cut() {
-        console.log('Cut not yet implemented');
+        if (this.canvasController) {
+            this.canvasController.cutSelected();
+        }
     }
 
     copy() {
-        console.log('Copy not yet implemented');
+        if (this.canvasController) {
+            this.canvasController.copySelected();
+        }
     }
 
     paste() {
-        console.log('Paste not yet implemented');
+        if (this.canvasController) {
+            this.canvasController.pasteFromClipboard();
+        }
     }
 
     deleteSelected() {
-        console.log('Delete not yet implemented');
+        if (this.canvasController) {
+            this.canvasController.deleteSelectedElement();
+        }
     }
 
     selectAll() {
-        console.log('Select all not yet implemented');
+        if (this.canvasController) {
+            this.canvasController.selectAll();
+        }
     }
 
     // ========== View Operations ==========
@@ -566,6 +778,7 @@ class ArisExpressApp {
     }
 
     showAbout() {
+        const update = AppConfig.app.lastUpdate;
         const about = `
 ${AppConfig.app.name}
 Версия: ${AppConfig.app.version}
@@ -575,11 +788,18 @@ ${AppConfig.app.description}
 Автор: ${AppConfig.app.author}
 
 Последнее обновление:
-  Issue #9: Реализация ARIS-совместимых нотаций с трафаретами и примерами
-  - Исправлена загрузка трафаретов (stencils)
-  - Добавлено SVG-рендеринг диаграмм на холсте
-  - Добавлены примеры VAD, EPC, BPMN, Org диаграмм
-  - Документация по тестированию в папке case/
+  Issue #${update.issueNumber}: ${update.issueTitle}
+  PR #${update.prNumber}: ${update.prTitle}
+
+  Изменения:
+  - Улучшен drag-and-drop для ARIS-фигур (chevron, etc.)
+  - Добавлена поддержка соединений (стрелок) между фигурами
+  - Реализовано редактирование надписей на фигурах
+  - Исправлены кнопки Вырезать/Копировать/Вставить
+  - Добавлено выделение, перемещение и удаление элементов
+  - Реализована панель свойств для выбранных объектов
+  - Иерархический проводник моделей с примерами
+  - Исправлена функция сохранения файлов
 
 GitHub: https://github.com/bpmbpm/draw-vad
         `;
