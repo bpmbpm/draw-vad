@@ -76,14 +76,16 @@ class ArisExpressApp {
         modelTree.querySelectorAll('.tree-item').forEach(item => {
             item.addEventListener('click', () => {
                 const file = item.getAttribute('data-example-file');
-                this.loadExampleDiagram(file);
+                const index = parseInt(item.getAttribute('data-example-index'));
+                const example = examples[index];
+                this.loadExampleDiagram(file, example ? example.type : null);
             });
         });
 
         this.examplesList = examples;
     }
 
-    async loadExampleDiagram(filePath) {
+    async loadExampleDiagram(filePath, diagramType = null) {
         try {
             const response = await fetch(filePath);
             if (!response.ok) {
@@ -97,11 +99,39 @@ class ArisExpressApp {
             // Also set raw XML for direct rendering
             this.canvasController.setRawXml(xml);
 
+            // Determine diagram type from file path or provided type
+            let notationType = diagramType;
+            if (!notationType) {
+                // Try to detect type from file path
+                if (filePath.includes('vad')) notationType = 'vad';
+                else if (filePath.includes('epc')) notationType = 'epc';
+                else if (filePath.includes('org')) notationType = 'org';
+                else if (filePath.includes('bpmn')) notationType = 'bpmn';
+                else notationType = 'vad'; // default
+            }
+
+            // Auto-select the matching stencil
+            this.setNotationStencil(notationType);
+
             this.setStatus(`Загружен пример: ${this.currentDiagram.name || filePath}`);
         } catch (error) {
             console.error('Error loading example:', error);
             alert('Ошибка при загрузке примера: ' + error.message);
         }
+    }
+
+    /**
+     * Set the notation stencil to match the diagram type
+     */
+    setNotationStencil(notationType) {
+        const notationSelect = document.getElementById('notation-select');
+        if (notationSelect) {
+            notationSelect.value = notationType;
+            // Trigger change event to load stencils
+            notationSelect.dispatchEvent(new Event('change'));
+        }
+        // Switch to stencils panel
+        this.stencilController.switchPanel('stencils');
     }
 
     showWelcome() {
@@ -112,14 +142,71 @@ class ArisExpressApp {
     // ========== File Operations ==========
 
     createNewDiagram() {
-        const notation = AppConfig.notations.default;
-        this.createDiagram(notation);
+        // Show dialog asking for diagram type
+        this.showCreateDiagramDialog();
+    }
+
+    showCreateDiagramDialog() {
+        const modalContainer = document.getElementById('modal-container');
+        modalContainer.innerHTML = `
+            <div class="modal-overlay" onclick="app.closeModal()">
+                <div class="modal-dialog" onclick="event.stopPropagation()">
+                    <div class="modal-header">
+                        <h3>Создать новую диаграмму</h3>
+                        <button class="modal-close" onclick="app.closeModal()">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <p style="margin-bottom: 15px; color: #666;">Выберите тип диаграммы:</p>
+                        <div class="diagram-type-list">
+                            <div class="diagram-type-item" onclick="app.createDiagramOfType('vad')">
+                                <span class="type-icon">📊</span>
+                                <div class="type-info">
+                                    <span class="type-name">VAD - Value Added Chain Diagram</span>
+                                    <span class="type-desc">Диаграмма цепочки добавленной стоимости</span>
+                                </div>
+                            </div>
+                            <div class="diagram-type-item" onclick="app.createDiagramOfType('epc')">
+                                <span class="type-icon">🔄</span>
+                                <div class="type-info">
+                                    <span class="type-name">EPC - Event-driven Process Chain</span>
+                                    <span class="type-desc">Событийная цепочка процессов</span>
+                                </div>
+                            </div>
+                            <div class="diagram-type-item" onclick="app.createDiagramOfType('bpmn')">
+                                <span class="type-icon">📋</span>
+                                <div class="type-info">
+                                    <span class="type-name">BPMN - Business Process Model</span>
+                                    <span class="type-desc">Модель бизнес-процессов</span>
+                                </div>
+                            </div>
+                            <div class="diagram-type-item" onclick="app.createDiagramOfType('org')">
+                                <span class="type-icon">👥</span>
+                                <div class="type-info">
+                                    <span class="type-name">ORG - Organizational Chart</span>
+                                    <span class="type-desc">Организационная структура</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        modalContainer.style.display = 'block';
+    }
+
+    createDiagramOfType(type) {
+        this.closeModal();
+        this.createDiagram(type);
     }
 
     createDiagram(type) {
         try {
             this.currentDiagram = this.createDiagramUseCase.execute(type);
             this.canvasController.setDiagram(this.currentDiagram);
+
+            // Auto-select the matching stencil
+            this.setNotationStencil(type);
+
             this.setStatus(`Создана новая ${type.toUpperCase()} диаграмма: ${this.currentDiagram.name}`);
             console.log('Created diagram:', this.currentDiagram);
         } catch (error) {
@@ -176,30 +263,76 @@ class ArisExpressApp {
     }
 
     async openDiagram() {
-        try {
-            const diagrams = await this.diagramService.listDiagrams();
+        // Show example files picker modal
+        this.showExampleFilesModal();
+    }
 
-            if (diagrams.length === 0) {
-                alert('Нет сохраненных диаграмм');
-                return;
-            }
+    showExampleFilesModal() {
+        const examples = this.examplesList || [
+            { name: 'VAD Пример 1 - Управление заказами', file: 'examples/vad_example_1.drawio', type: 'vad' },
+            { name: 'VAD Пример 2 - Производственный цикл', file: 'examples/vad_example_2.drawio', type: 'vad' },
+            { name: 'EPC Пример 1 - Обработка заявки', file: 'examples/epc_example_1.drawio', type: 'epc' },
+            { name: 'EPC Пример 2 - Обработка заказа', file: 'examples/epc_example_2.drawio', type: 'epc' },
+            { name: 'BPMN Пример 1 - Простой процесс', file: 'examples/bpmn_example_1.drawio', type: 'bpmn' },
+            { name: 'BPMN Пример 2 - Процесс с пулами', file: 'examples/bpmn_example_2.drawio', type: 'bpmn' },
+            { name: 'Org Пример 1 - Структура компании', file: 'examples/org_example_1.drawio', type: 'org' },
+            { name: 'Org Пример 2 - IT Отдел', file: 'examples/org_example_2.drawio', type: 'org' }
+        ];
 
-            // Show selection dialog
-            const diagramNames = diagrams.map((d, i) => `${i + 1}. ${d.name} (${d.type})`).join('\n');
-            const selection = prompt(`Выберите диаграмму:\n${diagramNames}\n\nВведите номер:`);
+        const modalContainer = document.getElementById('modal-container');
+        modalContainer.innerHTML = `
+            <div class="modal-overlay" onclick="app.closeModal()">
+                <div class="modal-dialog" onclick="event.stopPropagation()">
+                    <div class="modal-header">
+                        <h3>Открыть файл - примеры диаграмм</h3>
+                        <button class="modal-close" onclick="app.closeModal()">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <p style="margin-bottom: 15px; color: #666;">Папка: <code>draw-vad/aris/ver1/examples/</code></p>
+                        <div class="file-list">
+                            ${examples.map((example, i) => `
+                                <div class="file-item" onclick="app.selectExampleFile(${i})" data-index="${i}">
+                                    <span class="file-icon">${this.getNotationIcon(example.type)}</span>
+                                    <span class="file-name">${example.name}</span>
+                                    <span class="file-type">${example.type.toUpperCase()}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #ddd;">
+                            <button class="btn btn-secondary" onclick="app.importDiagram(); app.closeModal();">
+                                Открыть другой файл...
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        modalContainer.style.display = 'block';
+    }
 
-            if (selection) {
-                const index = parseInt(selection) - 1;
-                if (index >= 0 && index < diagrams.length) {
-                    this.currentDiagram = diagrams[index];
-                    this.canvasController.setDiagram(this.currentDiagram);
-                    this.setStatus(`Загружена диаграмма: ${this.currentDiagram.name}`);
-                }
-            }
-        } catch (error) {
-            console.error('Error opening diagram:', error);
-            alert('Ошибка при открытии: ' + error.message);
+    getNotationIcon(type) {
+        switch(type) {
+            case 'vad': return '📊';
+            case 'epc': return '🔄';
+            case 'bpmn': return '📋';
+            case 'org': return '👥';
+            default: return '📄';
         }
+    }
+
+    selectExampleFile(index) {
+        const examples = this.examplesList || [];
+        if (index >= 0 && index < examples.length) {
+            const example = examples[index];
+            this.loadExampleDiagram(example.file, example.type);
+            this.closeModal();
+        }
+    }
+
+    closeModal() {
+        const modalContainer = document.getElementById('modal-container');
+        modalContainer.style.display = 'none';
+        modalContainer.innerHTML = '';
     }
 
     importDiagram() {
