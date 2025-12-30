@@ -19,6 +19,8 @@ class CanvasController {
         this.dragOffset = { x: 0, y: 0 };
         this.isConnecting = false;
         this.connectionStart = null;
+        this.connectionStencil = null;
+        this.tempConnectionLine = null;
         this.elementIdCounter = 1;
         this.init();
     }
@@ -49,9 +51,17 @@ class CanvasController {
                         <marker id="arrowhead-dashed" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
                             <polygon points="0 0, 10 3.5, 0 7" fill="#666" />
                         </marker>
+                        <marker id="arrowhead-thick" markerWidth="12" markerHeight="9" refX="11" refY="4.5" orient="auto">
+                            <polygon points="0 0, 12 4.5, 0 9" fill="#333" />
+                        </marker>
+                        <marker id="arrowhead-gray" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                            <polygon points="0 0, 10 3.5, 0 7" fill="#999" />
+                        </marker>
                     </defs>
                     <g id="diagram-content"></g>
                     <g id="connection-layer"></g>
+                    <g id="connection-points-layer"></g>
+                    <g id="temp-connection-layer"></g>
                     <g id="selection-layer"></g>
                 </svg>
             </div>
@@ -60,6 +70,8 @@ class CanvasController {
         this.svg = document.getElementById('diagram-svg');
         this.diagramContent = document.getElementById('diagram-content');
         this.connectionLayer = document.getElementById('connection-layer');
+        this.connectionPointsLayer = document.getElementById('connection-points-layer');
+        this.tempConnectionLayer = document.getElementById('temp-connection-layer');
         this.selectionLayer = document.getElementById('selection-layer');
         this.canvasWrapper = this.canvasContainer.querySelector('.canvas-wrapper');
         this.canvasEmpty = this.canvasContainer.querySelector('.canvas-empty');
@@ -77,6 +89,13 @@ class CanvasController {
             const stencilXml = e.dataTransfer.getData('stencilXml');
             const stencilIndex = e.dataTransfer.getData('stencilIndex');
             const notation = e.dataTransfer.getData('notation');
+            const isConnection = e.dataTransfer.getData('isConnection') === 'true';
+
+            if (isConnection) {
+                // Handle connection drop - need to find elements near drop point
+                this.app.setStatus('Для создания связи: кликните на связь в трафарете, затем на начальную и конечную фигуры');
+                return;
+            }
 
             if (stencilXml || stencilIndex) {
                 const rect = this.svg.getBoundingClientRect();
@@ -105,16 +124,237 @@ class CanvasController {
                 e.preventDefault();
                 this.selectAll();
             } else if (e.key === 'Escape') {
+                this.cancelConnectionMode();
                 this.deselectAll();
             }
         });
 
-        // Click on canvas to deselect
+        // Click on canvas to deselect or cancel connection
         this.svg?.addEventListener('click', (e) => {
             if (e.target === this.svg || e.target.id === 'diagram-content') {
-                this.deselectAll();
+                if (this.isConnecting) {
+                    this.cancelConnectionMode();
+                } else {
+                    this.deselectAll();
+                }
             }
         });
+
+        // Mouse move for temporary connection line
+        this.svg?.addEventListener('mousemove', (e) => {
+            if (this.isConnecting && this.connectionStart) {
+                const rect = this.svg.getBoundingClientRect();
+                const scale = this.zoomLevel / 100;
+                const x = (e.clientX - rect.left) / scale;
+                const y = (e.clientY - rect.top) / scale;
+                this.updateTempConnectionLine(x, y);
+            }
+        });
+    }
+
+    /**
+     * Start connection mode to draw connections between shapes
+     */
+    startConnectionMode(stencilData) {
+        this.isConnecting = true;
+        this.connectionStencil = stencilData;
+        this.connectionStart = null;
+        this.svg.style.cursor = 'crosshair';
+
+        // Show connection points on all elements
+        this.showAllConnectionPoints();
+    }
+
+    /**
+     * Cancel connection mode
+     */
+    cancelConnectionMode() {
+        this.isConnecting = false;
+        this.connectionStencil = null;
+        this.connectionStart = null;
+        this.svg.style.cursor = 'default';
+        this.hideAllConnectionPoints();
+        this.clearTempConnectionLine();
+        this.app.setStatus('Режим соединения отменен');
+    }
+
+    /**
+     * Show connection points on all elements
+     */
+    showAllConnectionPoints() {
+        if (!this.connectionPointsLayer) return;
+        this.connectionPointsLayer.innerHTML = '';
+
+        this.elements.forEach(element => {
+            const points = this.getConnectionPoints(element);
+            points.forEach((point, index) => {
+                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circle.setAttribute('cx', point.x);
+                circle.setAttribute('cy', point.y);
+                circle.setAttribute('r', '5');
+                circle.setAttribute('fill', '#0078d4');
+                circle.setAttribute('stroke', '#fff');
+                circle.setAttribute('stroke-width', '1');
+                circle.setAttribute('class', 'connection-point');
+                circle.setAttribute('data-element-id', element.id);
+                circle.setAttribute('data-point-index', index);
+                circle.style.cursor = 'pointer';
+
+                // Highlight on hover
+                circle.addEventListener('mouseenter', () => {
+                    circle.setAttribute('r', '7');
+                    circle.setAttribute('fill', '#00a2ed');
+                });
+                circle.addEventListener('mouseleave', () => {
+                    circle.setAttribute('r', '5');
+                    circle.setAttribute('fill', '#0078d4');
+                });
+
+                // Click to select connection point
+                circle.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.handleConnectionPointClick(element, point, index);
+                });
+
+                this.connectionPointsLayer.appendChild(circle);
+            });
+        });
+    }
+
+    /**
+     * Hide all connection points
+     */
+    hideAllConnectionPoints() {
+        if (this.connectionPointsLayer) {
+            this.connectionPointsLayer.innerHTML = '';
+        }
+    }
+
+    /**
+     * Get connection points for an element (top, bottom, left, right, center)
+     */
+    getConnectionPoints(element) {
+        const x = element.position?.x || 0;
+        const y = element.position?.y || 0;
+        const w = element.size?.width || 100;
+        const h = element.size?.height || 60;
+
+        return [
+            { x: x + w / 2, y: y, name: 'top' },           // Top center
+            { x: x + w, y: y + h / 2, name: 'right' },     // Right center
+            { x: x + w / 2, y: y + h, name: 'bottom' },    // Bottom center
+            { x: x, y: y + h / 2, name: 'left' }           // Left center
+        ];
+    }
+
+    /**
+     * Handle click on a connection point
+     */
+    handleConnectionPointClick(element, point, pointIndex) {
+        if (!this.isConnecting) return;
+
+        if (!this.connectionStart) {
+            // First click - set start element
+            this.connectionStart = {
+                element: element,
+                point: point,
+                pointIndex: pointIndex
+            };
+            this.app.setStatus(`Связь от: ${element.name || element.id}. Выберите конечную фигуру.`);
+        } else {
+            // Second click - create connection
+            if (this.connectionStart.element.id === element.id) {
+                this.app.setStatus('Нельзя соединить элемент с самим собой');
+                return;
+            }
+
+            this.createConnectionFromStencil(
+                this.connectionStart.element,
+                this.connectionStart.point,
+                element,
+                point
+            );
+
+            // Reset connection mode
+            this.connectionStart = null;
+            this.clearTempConnectionLine();
+            this.app.setStatus('Связь создана. Выберите следующую пару фигур или нажмите Escape для выхода.');
+        }
+    }
+
+    /**
+     * Update temporary connection line while connecting
+     */
+    updateTempConnectionLine(mouseX, mouseY) {
+        if (!this.tempConnectionLayer || !this.connectionStart) return;
+
+        this.tempConnectionLayer.innerHTML = '';
+
+        const startX = this.connectionStart.point.x;
+        const startY = this.connectionStart.point.y;
+
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', startX);
+        line.setAttribute('y1', startY);
+        line.setAttribute('x2', mouseX);
+        line.setAttribute('y2', mouseY);
+        line.setAttribute('stroke', '#0078d4');
+        line.setAttribute('stroke-width', '2');
+        line.setAttribute('stroke-dasharray', '5,5');
+        line.setAttribute('marker-end', 'url(#arrowhead)');
+
+        this.tempConnectionLayer.appendChild(line);
+    }
+
+    /**
+     * Clear temporary connection line
+     */
+    clearTempConnectionLine() {
+        if (this.tempConnectionLayer) {
+            this.tempConnectionLayer.innerHTML = '';
+        }
+    }
+
+    /**
+     * Create connection from stencil data
+     */
+    createConnectionFromStencil(sourceElement, sourcePoint, targetElement, targetPoint) {
+        const stencil = this.connectionStencil;
+        const xml = stencil?.xml || '';
+
+        // Parse connection style from stencil
+        const style = {
+            strokeColor: '#333',
+            strokeWidth: '2',
+            dashed: false,
+            hasArrow: true
+        };
+
+        // Extract style from XML
+        const strokeMatch = xml.match(/strokeColor=#([A-Fa-f0-9]{6})/);
+        if (strokeMatch) style.strokeColor = '#' + strokeMatch[1];
+
+        const widthMatch = xml.match(/strokeWidth=(\d+)/);
+        if (widthMatch) style.strokeWidth = widthMatch[1];
+
+        style.dashed = xml.includes('dashed=1');
+        style.hasArrow = xml.includes('endArrow=classic') || xml.includes('endArrow=block');
+
+        // Determine connection type based on stencil title
+        const title = stencil?.title || '';
+        if (title.includes('predecessor') || title.includes('Поток управления') || title.includes('is predecessor')) {
+            style.strokeWidth = '3';  // Thicker for VAD process flow
+            style.strokeColor = '#333';
+        }
+
+        this.addConnection(
+            sourceElement.id,
+            targetElement.id,
+            style,
+            sourcePoint.name,
+            targetPoint.name,
+            stencil?.title
+        );
     }
 
     setDiagram(diagram) {
@@ -448,10 +688,10 @@ class CanvasController {
 
         // Add label if not swimlane (swimlane handles its own label)
         if (label && shapeType !== 'swimlane' && shapeType !== 'text') {
-            const text = this.createLabel(x + width / 2, y + height / 2, label, style);
+            const text = this.createLabel(x + width / 2, y + height / 2, label, style, width, height);
             g.appendChild(text);
         } else if (shapeType === 'text' && label) {
-            const text = this.createLabel(x + width / 2, y + height / 2, label, style);
+            const text = this.createLabel(x + width / 2, y + height / 2, label, style, width, height);
             g.appendChild(text);
         }
     }
@@ -685,7 +925,7 @@ class CanvasController {
         return g;
     }
 
-    createLabel(x, y, text, style) {
+    createLabel(x, y, text, style, maxWidth = null, maxHeight = null) {
         const textEl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
         textEl.setAttribute('x', x);
         textEl.setAttribute('y', y);
@@ -696,15 +936,73 @@ class CanvasController {
         textEl.setAttribute('class', 'element-label');
         textEl.style.pointerEvents = 'none';
 
-        // Handle multiline text
-        const lines = text.split(/\\n|\n/);
-        if (lines.length === 1) {
-            textEl.textContent = text;
-        } else {
-            const lineHeight = parseInt(style.fontSize || '12') * 1.2;
-            const totalHeight = lines.length * lineHeight;
-            const startY = y - totalHeight / 2 + lineHeight / 2;
+        const fontSize = parseInt(style.fontSize || '12');
+        const lineHeight = fontSize * 1.3;
 
+        // Handle multiline text from explicit newlines
+        let lines = text.split(/\\n|\n/);
+
+        // If we have maxWidth, wrap text to fit
+        if (maxWidth && maxWidth > 0) {
+            const wrappedLines = [];
+            const avgCharWidth = fontSize * 0.6; // Approximate character width
+            const maxCharsPerLine = Math.floor((maxWidth - 10) / avgCharWidth);
+
+            lines.forEach(line => {
+                if (line.length <= maxCharsPerLine) {
+                    wrappedLines.push(line);
+                } else {
+                    // Word wrap
+                    const words = line.split(' ');
+                    let currentLine = '';
+
+                    words.forEach(word => {
+                        const testLine = currentLine ? currentLine + ' ' + word : word;
+                        if (testLine.length <= maxCharsPerLine) {
+                            currentLine = testLine;
+                        } else {
+                            if (currentLine) {
+                                wrappedLines.push(currentLine);
+                            }
+                            // If word is longer than max, split it
+                            if (word.length > maxCharsPerLine) {
+                                let remaining = word;
+                                while (remaining.length > maxCharsPerLine) {
+                                    wrappedLines.push(remaining.substring(0, maxCharsPerLine - 1) + '-');
+                                    remaining = remaining.substring(maxCharsPerLine - 1);
+                                }
+                                currentLine = remaining;
+                            } else {
+                                currentLine = word;
+                            }
+                        }
+                    });
+                    if (currentLine) {
+                        wrappedLines.push(currentLine);
+                    }
+                }
+            });
+            lines = wrappedLines;
+        }
+
+        // Limit number of lines if maxHeight is set
+        if (maxHeight && maxHeight > 0) {
+            const maxLines = Math.floor((maxHeight - 10) / lineHeight);
+            if (lines.length > maxLines && maxLines > 0) {
+                lines = lines.slice(0, maxLines);
+                if (lines.length > 0) {
+                    const lastLine = lines[lines.length - 1];
+                    lines[lines.length - 1] = lastLine.substring(0, lastLine.length - 3) + '...';
+                }
+            }
+        }
+
+        const totalHeight = lines.length * lineHeight;
+        const startY = y - totalHeight / 2 + lineHeight / 2;
+
+        if (lines.length === 1) {
+            textEl.textContent = lines[0];
+        } else {
             lines.forEach((line, i) => {
                 const tspan = document.createElementNS('http://www.w3.org/2000/svg', 'tspan');
                 tspan.setAttribute('x', x);
@@ -723,10 +1021,34 @@ class CanvasController {
 
         if (!sourceEl || !targetEl) return;
 
-        const x1 = sourceEl.position.x + sourceEl.size.width;
-        const y1 = sourceEl.position.y + sourceEl.size.height / 2;
-        const x2 = targetEl.position.x;
-        const y2 = targetEl.position.y + targetEl.size.height / 2;
+        // Get connection points based on stored point names or calculate optimal
+        const sourcePoints = this.getConnectionPoints(sourceEl);
+        const targetPoints = this.getConnectionPoints(targetEl);
+
+        let sourcePoint, targetPoint;
+
+        // Find named connection points or use defaults
+        if (conn.sourcePoint) {
+            sourcePoint = sourcePoints.find(p => p.name === conn.sourcePoint) || sourcePoints[1]; // default right
+        } else {
+            sourcePoint = sourcePoints[1]; // right
+        }
+
+        if (conn.targetPoint) {
+            targetPoint = targetPoints.find(p => p.name === conn.targetPoint) || targetPoints[3]; // default left
+        } else {
+            targetPoint = targetPoints[3]; // left
+        }
+
+        const x1 = sourcePoint.x;
+        const y1 = sourcePoint.y;
+        const x2 = targetPoint.x;
+        const y2 = targetPoint.y;
+
+        // Create connection group
+        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        g.setAttribute('data-connection-id', conn.id);
+        g.setAttribute('class', 'connection-group');
 
         const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
         line.setAttribute('x1', x1);
@@ -735,15 +1057,65 @@ class CanvasController {
         line.setAttribute('y2', y2);
         line.setAttribute('stroke', conn.style?.strokeColor || '#333');
         line.setAttribute('stroke-width', conn.style?.strokeWidth || '2');
-        line.setAttribute('marker-end', 'url(#arrowhead)');
-        line.setAttribute('data-connection-id', conn.id);
         line.setAttribute('class', 'connection-line');
+
+        // Determine arrow marker based on style
+        if (conn.style?.hasArrow !== false) {
+            const strokeWidth = parseInt(conn.style?.strokeWidth) || 2;
+            if (strokeWidth >= 3) {
+                line.setAttribute('marker-end', 'url(#arrowhead-thick)');
+            } else if (conn.style?.dashed) {
+                line.setAttribute('marker-end', 'url(#arrowhead-dashed)');
+            } else {
+                line.setAttribute('marker-end', 'url(#arrowhead)');
+            }
+        }
 
         if (conn.style?.dashed) {
             line.setAttribute('stroke-dasharray', '4 4');
         }
 
-        this.connectionLayer.appendChild(line);
+        g.appendChild(line);
+
+        // Add connection label if present
+        if (conn.label) {
+            const midX = (x1 + x2) / 2;
+            const midY = (y1 + y2) / 2;
+            const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            label.setAttribute('x', midX);
+            label.setAttribute('y', midY - 5);
+            label.setAttribute('text-anchor', 'middle');
+            label.setAttribute('font-size', '10');
+            label.setAttribute('fill', '#666');
+            label.textContent = conn.label;
+            g.appendChild(label);
+        }
+
+        // Make connection selectable
+        g.style.cursor = 'pointer';
+        g.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.selectConnection(conn, g);
+        });
+
+        this.connectionLayer.appendChild(g);
+    }
+
+    /**
+     * Select a connection
+     */
+    selectConnection(conn, g) {
+        this.deselectAll();
+        this.selectedConnection = conn;
+
+        // Highlight the connection
+        const line = g.querySelector('line');
+        if (line) {
+            line.setAttribute('stroke', '#0078d4');
+            line.setAttribute('stroke-width', (parseInt(conn.style?.strokeWidth) || 2) + 1);
+        }
+
+        this.app.setStatus(`Выбрана связь: ${conn.label || conn.id}`);
     }
 
     renderElement(element) {
@@ -1149,15 +1521,19 @@ class CanvasController {
     }
 
     // Connection creation
-    addConnection(sourceId, targetId, style = {}) {
+    addConnection(sourceId, targetId, style = {}, sourcePoint = 'right', targetPoint = 'left', label = '') {
         const connection = {
             id: 'conn_' + Date.now(),
             sourceId,
             targetId,
+            sourcePoint: sourcePoint,
+            targetPoint: targetPoint,
+            label: label,
             style: {
                 strokeColor: style.strokeColor || '#333',
                 strokeWidth: style.strokeWidth || '2',
-                dashed: style.dashed || false
+                dashed: style.dashed || false,
+                hasArrow: style.hasArrow !== false
             }
         };
 
@@ -1166,6 +1542,11 @@ class CanvasController {
             this.currentDiagram.connections = this.connections;
         }
         this.renderDiagram();
+
+        // Re-show connection points if still in connection mode
+        if (this.isConnecting) {
+            this.showAllConnectionPoints();
+        }
     }
 
     setZoom(level) {

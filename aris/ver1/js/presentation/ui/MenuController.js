@@ -98,20 +98,14 @@ class MenuController {
                 break;
 
             // Model menu
-            case 'new-vad':
-                this.app.createDiagram('vad');
-                break;
-            case 'new-epc':
-                this.app.createDiagram('epc');
-                break;
-            case 'new-org':
-                this.app.createDiagram('org');
-                break;
             case 'properties':
                 this.app.showModelProperties();
                 break;
             case 'validate':
                 this.app.validateModel();
+                break;
+            case 'meta-model-editor':
+                this.app.showMetaModelEditor();
                 break;
 
             // Format menu
@@ -148,6 +142,9 @@ class MenuController {
             // Help menu
             case 'help-contents':
                 this.app.showHelp('index');
+                break;
+            case 'help-notation':
+                this.app.showHelp('notation');
                 break;
             case 'help-vad':
                 this.app.showHelp('vad');

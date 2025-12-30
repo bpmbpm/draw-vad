@@ -67,12 +67,10 @@
             <div class="menu-item" data-menu="model">
                 <span>Модель</span>
                 <div class="dropdown-menu" id="model-menu">
-                    <a href="#" data-action="new-vad">Новая VAD диаграмма</a>
-                    <a href="#" data-action="new-epc">Новая EPC диаграмма</a>
-                    <a href="#" data-action="new-org">Новая организационная диаграмма</a>
-                    <hr>
                     <a href="#" data-action="properties">Свойства модели...</a>
                     <a href="#" data-action="validate">Проверить модель</a>
+                    <hr>
+                    <a href="#" data-action="meta-model-editor">Редактор метамодели...</a>
                 </div>
             </div>
 
@@ -103,6 +101,8 @@
                 <span>Справка</span>
                 <div class="dropdown-menu" id="help-menu">
                     <a href="#" data-action="help-contents">Содержание справки</a>
+                    <a href="#" data-action="help-notation">Справочник нотаций</a>
+                    <hr>
                     <a href="#" data-action="help-vad">Справка по VAD</a>
                     <a href="#" data-action="help-epc">Справка по EPC</a>
                     <a href="#" data-action="help-bpmn">Справка по BPMN</a>
@@ -187,6 +187,9 @@
 
             <!-- Center panel: Canvas -->
             <div id="canvas-panel" class="panel canvas-panel">
+                <div id="diagram-tabs" class="diagram-tabs">
+                    <!-- Diagram tabs will be rendered here -->
+                </div>
                 <div class="canvas-header">
                     <div class="canvas-title">Новая диаграмма</div>
                     <div class="canvas-info">
