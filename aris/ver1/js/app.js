@@ -10,6 +10,10 @@ class ArisExpressApp {
         this.undoStack = [];
         this.redoStack = [];
 
+        // Multi-tab support
+        this.openDiagrams = [];
+        this.activeTabId = null;
+
         // Initialize infrastructure
         this.storageAdapter = new LocalStorageAdapter();
         this.xmlParser = new DrawioXmlParser();
@@ -42,8 +46,117 @@ class ArisExpressApp {
         // Initialize model explorer with examples
         this.initModelExplorer();
 
+        // Initialize tab container reference
+        this.tabContainer = document.getElementById('diagram-tabs');
+
         // Load welcome message or last diagram
         this.showWelcome();
+    }
+
+    // ========== Tab Management ==========
+
+    renderTabs() {
+        if (!this.tabContainer) return;
+
+        if (this.openDiagrams.length === 0) {
+            this.tabContainer.innerHTML = '';
+            return;
+        }
+
+        const tabsHtml = this.openDiagrams.map(diagram => {
+            const isActive = diagram.id === this.activeTabId;
+            const icon = this.getNotationIcon(diagram.type);
+            return `
+                <div class="diagram-tab ${isActive ? 'active' : ''}" data-tab-id="${diagram.id}">
+                    <span class="diagram-tab-icon">${icon}</span>
+                    <span class="diagram-tab-title">${diagram.name}</span>
+                    <span class="diagram-tab-close" data-close-id="${diagram.id}">&times;</span>
+                </div>
+            `;
+        }).join('');
+
+        this.tabContainer.innerHTML = tabsHtml;
+
+        // Attach tab click handlers
+        this.tabContainer.querySelectorAll('.diagram-tab').forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                if (!e.target.classList.contains('diagram-tab-close')) {
+                    const tabId = tab.getAttribute('data-tab-id');
+                    this.switchToTab(tabId);
+                }
+            });
+        });
+
+        // Attach close button handlers
+        this.tabContainer.querySelectorAll('.diagram-tab-close').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const tabId = btn.getAttribute('data-close-id');
+                this.closeTab(tabId);
+            });
+        });
+    }
+
+    addTab(diagram) {
+        // Check if diagram is already open
+        const existing = this.openDiagrams.find(d => d.id === diagram.id);
+        if (!existing) {
+            this.openDiagrams.push(diagram);
+        }
+
+        this.activeTabId = diagram.id;
+        this.currentDiagram = diagram;
+        this.renderTabs();
+    }
+
+    switchToTab(tabId) {
+        const diagram = this.openDiagrams.find(d => d.id === tabId);
+        if (diagram) {
+            this.activeTabId = tabId;
+            this.currentDiagram = diagram;
+            this.canvasController.setDiagram(diagram);
+            this.renderTabs();
+
+            // Update notation stencil
+            this.setNotationStencil(diagram.type);
+
+            this.setStatus(`Активна диаграмма: ${diagram.name}`);
+        }
+    }
+
+    closeTab(tabId) {
+        const index = this.openDiagrams.findIndex(d => d.id === tabId);
+        if (index === -1) return;
+
+        // Remove the diagram from open list
+        this.openDiagrams.splice(index, 1);
+
+        // If we're closing the active tab, switch to another
+        if (tabId === this.activeTabId) {
+            if (this.openDiagrams.length > 0) {
+                // Switch to the previous tab or the first one
+                const newIndex = Math.min(index, this.openDiagrams.length - 1);
+                this.switchToTab(this.openDiagrams[newIndex].id);
+            } else {
+                // No more tabs open
+                this.activeTabId = null;
+                this.currentDiagram = null;
+                this.canvasController.setDiagram(null);
+                this.setStatus('Нет открытых диаграмм');
+            }
+        }
+
+        this.renderTabs();
+    }
+
+    getNotationIcon(type) {
+        const icons = {
+            'vad': '📊',
+            'epc': '🔄',
+            'bpmn': '📋',
+            'org': '👥'
+        };
+        return icons[type] || '📄';
     }
 
     initModelExplorer() {
@@ -264,8 +377,14 @@ class ArisExpressApp {
                 else notationType = 'vad'; // default
             }
 
+            // Set diagram type
+            this.currentDiagram.type = notationType;
+
             // Auto-select the matching stencil
             this.setNotationStencil(notationType);
+
+            // Add as tab for multi-tab editing
+            this.addTab(this.currentDiagram);
 
             this.setStatus(`Загружен пример: ${this.currentDiagram.name || filePath}`);
         } catch (error) {
@@ -310,30 +429,38 @@ class ArisExpressApp {
                         <button class="modal-close" onclick="app.closeModal()">&times;</button>
                     </div>
                     <div class="modal-body">
+                        <div class="form-group" style="margin-bottom: 20px;">
+                            <label for="diagram-name" style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">Название схемы:</label>
+                            <input type="text" id="diagram-name" placeholder="Введите название схемы" style="width: 100%; padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px;" value="Новая схема">
+                        </div>
                         <p style="margin-bottom: 15px; color: #666;">Выберите тип диаграммы:</p>
                         <div class="diagram-type-list">
-                            <div class="diagram-type-item" onclick="app.createDiagramOfType('vad')">
+                            <div class="diagram-type-item" onclick="app.selectDiagramType('vad')">
+                                <input type="radio" name="diagram-type" value="vad" id="type-vad" checked style="margin-right: 10px;">
                                 <span class="type-icon">📊</span>
                                 <div class="type-info">
                                     <span class="type-name">VAD - Value Added Chain Diagram</span>
                                     <span class="type-desc">Диаграмма цепочки добавленной стоимости</span>
                                 </div>
                             </div>
-                            <div class="diagram-type-item" onclick="app.createDiagramOfType('epc')">
+                            <div class="diagram-type-item" onclick="app.selectDiagramType('epc')">
+                                <input type="radio" name="diagram-type" value="epc" id="type-epc" style="margin-right: 10px;">
                                 <span class="type-icon">🔄</span>
                                 <div class="type-info">
                                     <span class="type-name">EPC - Event-driven Process Chain</span>
                                     <span class="type-desc">Событийная цепочка процессов</span>
                                 </div>
                             </div>
-                            <div class="diagram-type-item" onclick="app.createDiagramOfType('bpmn')">
+                            <div class="diagram-type-item" onclick="app.selectDiagramType('bpmn')">
+                                <input type="radio" name="diagram-type" value="bpmn" id="type-bpmn" style="margin-right: 10px;">
                                 <span class="type-icon">📋</span>
                                 <div class="type-info">
                                     <span class="type-name">BPMN - Business Process Model</span>
                                     <span class="type-desc">Модель бизнес-процессов</span>
                                 </div>
                             </div>
-                            <div class="diagram-type-item" onclick="app.createDiagramOfType('org')">
+                            <div class="diagram-type-item" onclick="app.selectDiagramType('org')">
+                                <input type="radio" name="diagram-type" value="org" id="type-org" style="margin-right: 10px;">
                                 <span class="type-icon">👥</span>
                                 <div class="type-info">
                                     <span class="type-name">ORG - Organizational Chart</span>
@@ -341,11 +468,39 @@ class ArisExpressApp {
                                 </div>
                             </div>
                         </div>
+                        <div style="margin-top: 20px; text-align: right;">
+                            <button class="btn btn-secondary" onclick="app.closeModal()" style="margin-right: 10px;">Отмена</button>
+                            <button class="btn btn-primary" onclick="app.createDiagramFromDialog()">Создать</button>
+                        </div>
                     </div>
                 </div>
             </div>
         `;
         modalContainer.style.display = 'block';
+
+        // Focus on name input
+        setTimeout(() => {
+            const nameInput = document.getElementById('diagram-name');
+            if (nameInput) {
+                nameInput.focus();
+                nameInput.select();
+            }
+        }, 100);
+    }
+
+    selectDiagramType(type) {
+        document.getElementById('type-' + type).checked = true;
+    }
+
+    createDiagramFromDialog() {
+        const nameInput = document.getElementById('diagram-name');
+        const name = nameInput ? nameInput.value.trim() : 'Новая схема';
+
+        const selectedType = document.querySelector('input[name="diagram-type"]:checked');
+        const type = selectedType ? selectedType.value : 'vad';
+
+        this.closeModal();
+        this.createDiagram(type, name);
     }
 
     createDiagramOfType(type) {
@@ -353,9 +508,15 @@ class ArisExpressApp {
         this.createDiagram(type);
     }
 
-    createDiagram(type) {
+    createDiagram(type, name = null) {
         try {
             this.currentDiagram = this.createDiagramUseCase.execute(type);
+
+            // Set custom name if provided
+            if (name) {
+                this.currentDiagram.name = name;
+            }
+
             this.canvasController.setDiagram(this.currentDiagram);
 
             // Auto-select the matching stencil
@@ -363,6 +524,9 @@ class ArisExpressApp {
 
             // Add to model explorer
             this.addDiagramToExplorer(this.currentDiagram);
+
+            // Add as tab for multi-tab editing
+            this.addTab(this.currentDiagram);
 
             // Update model properties
             if (this.propertiesController) {
@@ -729,6 +893,132 @@ class ArisExpressApp {
         }
 
         alert(message);
+    }
+
+    showMetaModelEditor() {
+        const modalContainer = document.getElementById('modal-container');
+        const currentNotation = this.stencilController?.currentNotation || 'vad';
+
+        modalContainer.innerHTML = `
+            <div class="modal-overlay" onclick="app.closeModal()">
+                <div class="modal-dialog" style="max-width: 800px;" onclick="event.stopPropagation()">
+                    <div class="modal-header">
+                        <h3>Редактор метамодели - ${currentNotation.toUpperCase()}</h3>
+                        <button class="modal-close" onclick="app.closeModal()">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div style="margin-bottom: 20px;">
+                            <label style="font-weight: 600;">Выберите нотацию:</label>
+                            <select id="meta-notation-select" style="margin-left: 10px; padding: 5px;">
+                                <option value="vad" ${currentNotation === 'vad' ? 'selected' : ''}>VAD - Value Added Diagram</option>
+                                <option value="epc" ${currentNotation === 'epc' ? 'selected' : ''}>EPC - Event-driven Process Chain</option>
+                                <option value="org" ${currentNotation === 'org' ? 'selected' : ''}>ORG - Organizational Structure</option>
+                                <option value="bpmn" ${currentNotation === 'bpmn' ? 'selected' : ''}>BPMN</option>
+                            </select>
+                        </div>
+
+                        <div style="display: flex; gap: 20px;">
+                            <div style="flex: 1;">
+                                <h4 style="margin-bottom: 10px; color: #333;">Фигуры (Shapes)</h4>
+                                <div id="meta-shapes-list" style="border: 1px solid #ddd; padding: 10px; min-height: 200px; background: #f9f9f9;">
+                                    <p style="color: #666; font-size: 12px;">Загрузка...</p>
+                                </div>
+                                <button class="btn btn-secondary" style="margin-top: 10px;" onclick="app.addMetaShape()">+ Добавить фигуру</button>
+                            </div>
+                            <div style="flex: 1;">
+                                <h4 style="margin-bottom: 10px; color: #333;">Связи (Connections)</h4>
+                                <div id="meta-connections-list" style="border: 1px solid #ddd; padding: 10px; min-height: 200px; background: #f9f9f9;">
+                                    <p style="color: #666; font-size: 12px;">Загрузка...</p>
+                                </div>
+                                <button class="btn btn-secondary" style="margin-top: 10px;" onclick="app.addMetaConnection()">+ Добавить связь</button>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 20px; padding: 15px; background: #fff3cd; border-radius: 4px;">
+                            <p style="margin: 0; color: #856404; font-size: 13px;">
+                                <strong>Примечание:</strong> Редактирование метамодели позволяет добавлять или изменять фигуры и связи в текущей нотации.
+                                Изменения сохраняются в файл трафаретов stencils/${currentNotation}.xml.
+                            </p>
+                        </div>
+                    </div>
+                    <div style="padding: 15px 20px; background: #f8f8f8; border-top: 1px solid #ddd; text-align: right;">
+                        <button class="btn btn-secondary" onclick="app.closeModal()">Отмена</button>
+                        <button class="btn btn-primary" style="margin-left: 10px;" onclick="app.saveMetaModel()">Сохранить изменения</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        modalContainer.style.display = 'block';
+
+        // Load current stencil data
+        this.loadMetaModelData(currentNotation);
+
+        // Handle notation change
+        document.getElementById('meta-notation-select').addEventListener('change', (e) => {
+            this.loadMetaModelData(e.target.value);
+        });
+    }
+
+    async loadMetaModelData(notation) {
+        try {
+            const response = await fetch(`stencils/${notation}.xml`);
+            const stencilData = await response.text();
+
+            let stencils;
+            const match = stencilData.match(/<mxlibrary>([\s\S]*)<\/mxlibrary>/);
+            if (match) {
+                stencils = JSON.parse(match[1]);
+            } else {
+                stencils = JSON.parse(stencilData);
+            }
+
+            // Separate shapes and connections
+            const shapes = [];
+            const connections = [];
+            stencils.forEach((stencil, index) => {
+                const isConnection = stencil.xml && (stencil.xml.includes('edge="1"') || stencil.xml.includes('endArrow='));
+                if (isConnection) {
+                    connections.push({ ...stencil, index });
+                } else {
+                    shapes.push({ ...stencil, index });
+                }
+            });
+
+            // Render shapes list
+            const shapesHtml = shapes.map(s => `
+                <div style="padding: 8px; margin-bottom: 5px; background: #fff; border: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 12px;">${s.title}</span>
+                    <span style="font-size: 10px; color: #666;">${s.w}x${s.h}</span>
+                </div>
+            `).join('');
+            document.getElementById('meta-shapes-list').innerHTML = shapesHtml || '<p style="color: #999;">Нет фигур</p>';
+
+            // Render connections list
+            const connectionsHtml = connections.map(c => `
+                <div style="padding: 8px; margin-bottom: 5px; background: #fff; border: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 12px;">${c.title}</span>
+                </div>
+            `).join('');
+            document.getElementById('meta-connections-list').innerHTML = connectionsHtml || '<p style="color: #999;">Нет связей</p>';
+
+        } catch (error) {
+            console.error('Error loading meta model data:', error);
+            document.getElementById('meta-shapes-list').innerHTML = '<p style="color: #c00;">Ошибка загрузки</p>';
+            document.getElementById('meta-connections-list').innerHTML = '<p style="color: #c00;">Ошибка загрузки</p>';
+        }
+    }
+
+    addMetaShape() {
+        alert('Добавление новых фигур пока не реализовано.\nДля добавления фигур отредактируйте файл stencils/*.xml вручную.');
+    }
+
+    addMetaConnection() {
+        alert('Добавление новых связей пока не реализовано.\nДля добавления связей отредактируйте файл stencils/*.xml вручную.');
+    }
+
+    saveMetaModel() {
+        alert('Сохранение метамодели пока не реализовано.\nИзменения необходимо вносить вручную в файлы stencils/*.xml.');
+        this.closeModal();
     }
 
     // ========== Format Operations ==========

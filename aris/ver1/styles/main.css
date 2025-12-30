@@ -273,6 +273,74 @@ body {
     color: #555;
 }
 
+/* Diagram Tabs */
+.diagram-tabs {
+    display: flex;
+    background-color: #e8e8e8;
+    border-bottom: 1px solid #d0d0d0;
+    overflow-x: auto;
+    min-height: 0;
+}
+
+.diagram-tabs:empty {
+    display: none;
+}
+
+.diagram-tab {
+    display: flex;
+    align-items: center;
+    padding: 6px 12px;
+    background-color: #f0f0f0;
+    border: 1px solid #d0d0d0;
+    border-bottom: none;
+    border-radius: 4px 4px 0 0;
+    margin-right: 2px;
+    cursor: pointer;
+    font-size: 12px;
+    white-space: nowrap;
+    transition: background-color 0.2s;
+}
+
+.diagram-tab:hover {
+    background-color: #e0e0e0;
+}
+
+.diagram-tab.active {
+    background-color: #fff;
+    border-bottom: 1px solid #fff;
+    margin-bottom: -1px;
+}
+
+.diagram-tab-title {
+    margin-right: 8px;
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.diagram-tab-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    font-size: 14px;
+    line-height: 1;
+    color: #666;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.diagram-tab-close:hover {
+    background-color: #c00;
+    color: #fff;
+}
+
+.diagram-tab-icon {
+    margin-right: 5px;
+    font-size: 14px;
+}
+
 /* Canvas */
 .canvas-header {
     display: flex;
@@ -662,12 +730,31 @@ body {
     font-style: italic;
 }
 
+/* Stencil Section Styles */
+.stencil-section {
+    margin-bottom: 15px;
+}
+
+.stencil-section-header {
+    font-size: 12px;
+    font-weight: 600;
+    color: #555;
+    padding: 8px 10px;
+    background-color: #f0f0f0;
+    border-bottom: 1px solid #ddd;
+    margin-bottom: 5px;
+}
+
 /* Stencil Grid Styles */
 .stencil-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    gap: 10px;
-    padding: 10px;
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    gap: 8px;
+    padding: 8px;
+}
+
+.stencil-grid.stencil-connections {
+    grid-template-columns: 1fr;
 }
 
 .stencil-item {
@@ -689,6 +776,21 @@ body {
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
+.stencil-connection-item {
+    flex-direction: row;
+    padding: 6px 10px;
+    gap: 10px;
+}
+
+.stencil-connection-item .stencil-preview {
+    margin-bottom: 0;
+}
+
+.stencil-connection-item .stencil-label {
+    text-align: left;
+    flex: 1;
+}
+
 .stencil-preview {
     display: flex;
     align-items: center;
@@ -696,11 +798,21 @@ body {
     margin-bottom: 5px;
 }
 
+.stencil-preview svg {
+    display: block;
+}
+
+.connection-preview {
+    margin-bottom: 0;
+}
+
 .stencil-label {
-    font-size: 11px;
+    font-size: 10px;
     text-align: center;
     word-wrap: break-word;
     width: 100%;
+    line-height: 1.2;
+    color: #444;
 }
 
 .stencil-selector {
