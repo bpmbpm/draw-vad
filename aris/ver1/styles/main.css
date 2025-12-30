@@ -576,7 +576,7 @@ body {
 
 /* Model Tree Styles */
 .model-tree-section {
-    margin: 10px 0;
+    margin: 5px 0;
 }
 
 .tree-header {
@@ -592,26 +592,74 @@ body {
     margin: 0;
 }
 
+.tree-folder {
+    padding: 6px 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    user-select: none;
+    transition: background-color 0.2s;
+}
+
+.tree-folder:hover {
+    background-color: #f0f0f0;
+}
+
+.tree-folder.expanded {
+    font-weight: 500;
+}
+
+.tree-expand {
+    font-size: 10px;
+    width: 12px;
+    color: #666;
+}
+
+.tree-children {
+    margin-left: 0;
+}
+
 .tree-item {
-    padding: 6px 12px;
+    padding: 5px 10px;
     cursor: pointer;
     transition: background-color 0.2s;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
 }
 
 .tree-item:hover {
     background-color: #e8f4fd;
 }
 
+.tree-item.selected {
+    background-color: #0078d4;
+    color: white;
+}
+
+.tree-item.selected .tree-label {
+    color: white;
+}
+
 .tree-icon {
-    font-size: 16px;
+    font-size: 14px;
+    flex-shrink: 0;
 }
 
 .tree-label {
-    font-size: 13px;
+    font-size: 12px;
     flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.tree-empty {
+    padding: 8px 15px;
+    color: #999;
+    font-size: 12px;
+    font-style: italic;
 }
 
 /* Stencil Grid Styles */
