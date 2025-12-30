@@ -667,3 +667,188 @@ body {
     border-radius: 3px;
     font-size: 13px;
 }
+
+/* Modal Overlay */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+}
+
+.modal-dialog {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    min-width: 500px;
+    max-width: 700px;
+    max-height: 80vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-header {
+    padding: 15px 20px;
+    background-color: #f8f8f8;
+    border-bottom: 1px solid #d0d0d0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
+    padding: 0;
+    line-height: 1;
+}
+
+.modal-close:hover {
+    color: #000;
+}
+
+.modal-body {
+    padding: 20px;
+    overflow-y: auto;
+    max-height: 60vh;
+}
+
+/* File List for Open Dialog */
+.file-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.file-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.file-item:hover {
+    background-color: #e8f4fd;
+    border-color: #0078d4;
+    transform: translateX(5px);
+}
+
+.file-icon {
+    font-size: 24px;
+    margin-right: 12px;
+}
+
+.file-name {
+    flex: 1;
+    font-size: 14px;
+    color: #333;
+}
+
+.file-type {
+    font-size: 11px;
+    padding: 2px 8px;
+    background-color: #e8e8e8;
+    border-radius: 10px;
+    color: #666;
+    font-weight: 600;
+}
+
+/* Diagram Type Selection for Create Dialog */
+.diagram-type-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.diagram-type-item {
+    display: flex;
+    align-items: center;
+    padding: 15px 20px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.diagram-type-item:hover {
+    background-color: #e8f4fd;
+    border-color: #0078d4;
+    transform: translateX(5px);
+}
+
+.type-icon {
+    font-size: 32px;
+    margin-right: 15px;
+}
+
+.type-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.type-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 4px;
+}
+
+.type-desc {
+    font-size: 13px;
+    color: #666;
+}
+
+/* Button Styles */
+.btn {
+    padding: 8px 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #fff;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.btn:hover {
+    background-color: #f0f0f0;
+}
+
+.btn-primary {
+    background-color: #0078d4;
+    color: #fff;
+    border-color: #0078d4;
+}
+
+.btn-primary:hover {
+    background-color: #006abc;
+}
+
+.btn-secondary {
+    background-color: #f8f8f8;
+    color: #333;
+    border-color: #ccc;
+}
+
+.btn-secondary:hover {
+    background-color: #e8e8e8;
+}
