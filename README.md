@@ -7,3 +7,7 @@
 Изначально конфигурация системы View (т.е. паблишер). В настройках можно выбрать Edit (для архитекторов, по идеи потом сделать переключение в этот режим по паролю).  
 Текущий вариант: https://bpmbpm.github.io/draw-vad/test/index13_v4.html  
 Обратить внимание на структуру файлов p.1..drawio и т.п. Они имеют человекочитаемый формат (без авто id и простая структура).
+
+## ARIS Express Clone
+https://github.com/bpmbpm/draw-vad/tree/main/aris/ver1  
+отдельный проект https://bpmbpm.github.io/draw-vad/tree/main/aris/ver1  
