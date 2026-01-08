@@ -10,4 +10,4 @@
 
 ## ARIS Express Clone
 https://github.com/bpmbpm/draw-vad/tree/main/aris/ver1  
-отдельный проект https://bpmbpm.github.io/draw-vad/tree/main/aris/ver1  
+отдельный проект https://bpmbpm.github.io/draw-vad/aris/ver1  
