@@ -1012,3 +1012,28 @@ body {
 .btn-secondary:hover {
     background-color: #e8e8e8;
 }
+
+/* Issue indicator in toolbar */
+.issue-indicator {
+    display: flex;
+    align-items: center;
+    padding: 4px 12px;
+    background-color: #e8f4fd;
+    border: 1px solid #0078d4;
+    border-radius: 12px;
+    font-size: 11px;
+    color: #0078d4;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.issue-indicator:hover {
+    background-color: #0078d4;
+    color: #fff;
+}
+
+.issue-indicator a {
+    color: inherit;
+    text-decoration: none;
+}

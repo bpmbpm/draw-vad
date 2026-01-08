@@ -492,6 +492,60 @@ class CanvasController {
                 }
             });
 
+            // Populate this.elements and this.connections for re-rendering support
+            this.elements = [];
+            this.connections = [];
+
+            // Convert XML elements to internal element format
+            elementMap.forEach(el => {
+                if (el.isVertex && el.geometry && !el.geometry.relative) {
+                    const parsedStyle = this.parseStyle(el.style);
+                    const shapeType = this.getShapeType(el.style);
+                    // Check if this is a diagram title element (partialRectangle shape)
+                    const isDiagramTitle = shapeType === 'partialRect' ||
+                        el.style.includes('shape=partialRectangle') ||
+                        (el.id && (el.id.includes('title') || el.id.includes('process_title')));
+                    this.elements.push({
+                        id: el.id,
+                        name: el.value,
+                        type: shapeType,
+                        shapeType: shapeType,
+                        position: { x: el.geometry.x, y: el.geometry.y },
+                        size: { width: el.geometry.width, height: el.geometry.height },
+                        style: parsedStyle,
+                        xmlStyle: el.style,
+                        isDiagramTitle: isDiagramTitle
+                    });
+                }
+            });
+
+            // Convert edges to internal connection format
+            edges.forEach(edge => {
+                const parsedStyle = this.parseStyle(edge.style);
+                const hasArrow = edge.style.includes('endArrow=classic') || edge.style.includes('endArrow=block');
+                const isDashed = edge.style.includes('dashed=1');
+                this.connections.push({
+                    id: edge.id,
+                    sourceId: edge.source,
+                    targetId: edge.target,
+                    label: edge.value || '',
+                    style: {
+                        strokeColor: parsedStyle.strokeColor || '#333',
+                        strokeWidth: parsedStyle.strokeWidth || '2',
+                        dashed: isDashed,
+                        hasArrow: hasArrow
+                    },
+                    sourcePoint: 'right',
+                    targetPoint: 'left'
+                });
+            });
+
+            // Sync with diagram object if available
+            if (this.currentDiagram) {
+                this.currentDiagram.elements = this.elements;
+                this.currentDiagram.connections = this.connections;
+            }
+
             // Calculate bounding box
             let minX = Infinity, minY = Infinity, maxX = 0, maxY = 0;
             elementMap.forEach(el => {
@@ -514,16 +568,14 @@ class CanvasController {
             this.svg.setAttribute('width', width);
             this.svg.setAttribute('height', height);
 
-            // Render edges first
-            edges.forEach(edge => {
-                this.renderXmlEdge(edge, elementMap);
+            // Render connections first (so they're behind shapes)
+            this.connections.forEach(conn => {
+                this.renderConnection(conn);
             });
 
-            // Render vertices
-            elementMap.forEach(el => {
-                if (el.isVertex) {
-                    this.renderXmlElement(el, elementMap);
-                }
+            // Render vertices using elements array
+            this.elements.forEach(element => {
+                this.renderElement(element);
             });
 
         } catch (error) {
@@ -688,8 +740,14 @@ class CanvasController {
 
         // Add label if not swimlane (swimlane handles its own label)
         if (label && shapeType !== 'swimlane' && shapeType !== 'text') {
-            const text = this.createLabel(x + width / 2, y + height / 2, label, style, width, height);
-            g.appendChild(text);
+            if (shapeType === 'partialRect') {
+                // For partial rect (title shapes), use left-aligned text with padding
+                const text = this.createLabel(x + 8, y + height / 2, label, { ...style, align: 'left' }, width, height);
+                g.appendChild(text);
+            } else {
+                const text = this.createLabel(x + width / 2, y + height / 2, label, style, width, height);
+                g.appendChild(text);
+            }
         } else if (shapeType === 'text' && label) {
             const text = this.createLabel(x + width / 2, y + height / 2, label, style, width, height);
             g.appendChild(text);
@@ -745,15 +803,31 @@ class CanvasController {
     }
 
     createPartialRect(x, y, width, height, fill, stroke, strokeWidth) {
+        // PartialRectangle shape - has only left border (like a title/label bar)
+        // Similar to shape=partialRectangle;html=1;right=0;top=0;bottom=0
+        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+
+        // Background rect (transparent/light fill)
         const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
         rect.setAttribute('x', x);
         rect.setAttribute('y', y);
         rect.setAttribute('width', width);
         rect.setAttribute('height', height);
-        rect.setAttribute('fill', fill === 'none' ? 'transparent' : fill);
-        rect.setAttribute('stroke', stroke);
-        rect.setAttribute('stroke-width', strokeWidth);
-        return rect;
+        rect.setAttribute('fill', fill === 'none' ? 'transparent' : (fill || 'transparent'));
+        rect.setAttribute('stroke', 'none');
+        g.appendChild(rect);
+
+        // Left border line only
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', x);
+        line.setAttribute('y1', y);
+        line.setAttribute('x2', x);
+        line.setAttribute('y2', y + height);
+        line.setAttribute('stroke', stroke || '#000000');
+        line.setAttribute('stroke-width', strokeWidth || '2');
+        g.appendChild(line);
+
+        return g;
     }
 
     createHexagon(x, y, width, height, fill, stroke, strokeWidth) {
@@ -929,10 +1003,26 @@ class CanvasController {
         const textEl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
         textEl.setAttribute('x', x);
         textEl.setAttribute('y', y);
-        textEl.setAttribute('text-anchor', 'middle');
+
+        // Handle text alignment
+        const align = style.align || 'center';
+        if (align === 'left') {
+            textEl.setAttribute('text-anchor', 'start');
+        } else if (align === 'right') {
+            textEl.setAttribute('text-anchor', 'end');
+        } else {
+            textEl.setAttribute('text-anchor', 'middle');
+        }
+
         textEl.setAttribute('dominant-baseline', 'middle');
         textEl.setAttribute('font-size', style.fontSize || '12');
         textEl.setAttribute('fill', style.fontColor || '#333');
+
+        // Handle font style (bold)
+        if (style.fontStyle === 'bold' || style.fontStyle === '1') {
+            textEl.setAttribute('font-weight', 'bold');
+        }
+
         textEl.setAttribute('class', 'element-label');
         textEl.style.pointerEvents = 'none';
 
@@ -1296,6 +1386,20 @@ class CanvasController {
         const finishEditing = () => {
             element.name = input.value;
             document.body.removeChild(input);
+
+            // If editing diagram title element, also update the diagram name
+            if (element.isDiagramTitle && this.currentDiagram) {
+                this.currentDiagram.name = input.value;
+                // Update canvas title
+                if (this.canvasTitle) {
+                    this.canvasTitle.textContent = input.value;
+                }
+                // Notify app to update tabs
+                if (this.app && this.app.renderTabs) {
+                    this.app.renderTabs();
+                }
+            }
+
             this.renderDiagram();
 
             // Reselect the element

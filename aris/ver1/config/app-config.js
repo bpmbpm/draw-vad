@@ -13,10 +13,10 @@ const AppConfig = {
         author: 'draw-vad',
         description: 'Business process modeling tool supporting VAD, EPC, and organizational diagrams',
         lastUpdate: {
-            issueNumber: 13,
-            issueTitle: 'Aris1c',
-            prNumber: 14,
-            prTitle: 'ARIS-like UI features with editable shapes and connections'
+            issueNumber: 17,
+            issueTitle: 'Aris1e',
+            prNumber: 18,
+            prTitle: 'Metamodel markdown export, issue indicator, connector fixes, diagram naming'
         }
     },
 
