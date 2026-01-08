@@ -1,5 +1,7 @@
 # ARIS Express Clone - Version 1
 
+## run
+https://bpmbpm.github.io/draw-vad/aris/ver1
 ## Описание
 
 ARIS Express Clone - это веб-приложение для моделирования бизнес-процессов, созданное для воспроизведения функциональности ARIS Express с использованием современных веб-технологий.
